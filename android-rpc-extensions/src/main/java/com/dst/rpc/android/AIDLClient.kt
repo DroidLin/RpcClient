@@ -36,19 +36,31 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
     ): Any? {
         assertWorkerThread()
         val rpcInterface = this.acquireBinderConnection(sourceAddress = sourceAddress, remoteAddress = remoteAddress)
-        return if (isSuspended) {
-            rpcInterface.callSuspendFunction(
-                functionOwner = functionOwner,
-                functionName = functionName,
-                argumentTypes = functionParameterTypes.filter { it != Continuation::class.java },
-                argumentValue = functionParameterValues
-            )
-        } else rpcInterface.callFunction(
-            functionOwner = functionOwner,
-            functionName = functionName,
-            argumentTypes = functionParameterTypes,
-            argumentValue = functionParameterValues
-        )
+        val result = kotlin.runCatching {
+            if (isSuspended) {
+                rpcInterface.callSuspendFunction(
+                    functionOwner = functionOwner,
+                    functionName = functionName,
+                    argumentTypes = functionParameterTypes.filter { it != Continuation::class.java },
+                    argumentValue = functionParameterValues.filter { it !is Continuation<*>  }
+                )
+            } else {
+                rpcInterface.callFunction(
+                    functionOwner = functionOwner,
+                    functionName = functionName,
+                    argumentTypes = functionParameterTypes,
+                    argumentValue = functionParameterValues
+                )
+            }
+        }
+        val throwable = result.exceptionOrNull()
+        if (result.isFailure && throwable != null) {
+            if (rootExceptionHandler.handle(throwable = throwable)) {
+                return null
+            }
+            throw UnHandledRuntimeException(throwable)
+        }
+        return result.getOrNull()
     }
 
     /**
@@ -85,10 +97,7 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
     }
 
     /**
-     * factory that accept address like
-     * ```
-     * "android://[hostKey]:[port]"
-     * ```
+     * factory that accept address like ``` "android://[hostKey]:[port] ```
      */
     class AIDLClientFactory : Client.Factory {
 

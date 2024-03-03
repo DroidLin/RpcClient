@@ -8,6 +8,8 @@ import java.util.ServiceLoader
  */
 interface Client {
 
+    suspend fun openConnection(sourceAddress: RPCAddress, remoteAddress: RPCAddress): Connection
+
     suspend fun execute(
         sourceAddress: RPCAddress,
         remoteAddress: RPCAddress,
