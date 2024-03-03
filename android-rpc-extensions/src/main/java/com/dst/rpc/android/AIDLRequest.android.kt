@@ -3,29 +3,20 @@ package com.dst.rpc.android
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import com.dst.rpc.Request
 
-internal data class RemoteInvocationRequest(
+internal data class AndroidInvocationRequest(
     val className: String,
     val functionName: String,
     val classTypesOfFunctionParameter: List<String>,
     val valuesOfFunctionParameter: List<Any?>,
-    val isSuspendFunction: Boolean,
 ) : AIDLRequest, Parcelable {
 
     constructor(parcel: Parcel) : this(
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
-        ArrayList<String>().also { arrayList ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                parcel.readList(arrayList, RemoteInvocationRequest::class.java.classLoader, String::class.java)
-            } else parcel.readList(arrayList, RemoteInvocationRequest::class.java.classLoader)
-        },
-        ArrayList<Any?>().also { arrayList ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                parcel.readList(arrayList, RemoteInvocationRequest::class.java.classLoader, Any::class.java)
-            } else parcel.readList(arrayList, RemoteInvocationRequest::class.java.classLoader)
-        },
-        parcel.readInt() == 1
+        className = requireNotNull(parcel.readString()),
+        functionName = requireNotNull(parcel.readString()),
+        classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
+        valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -33,7 +24,6 @@ internal data class RemoteInvocationRequest(
         parcel.writeString(this.functionName)
         parcel.writeList(this.classTypesOfFunctionParameter)
         parcel.writeList(this.valuesOfFunctionParameter)
-        parcel.writeInt(if (this.isSuspendFunction) 1 else 0)
     }
 
     override fun describeContents(): Int {
@@ -44,14 +34,125 @@ internal data class RemoteInvocationRequest(
         private const val serialVersionUID: Long = -3493071081757263356L
 
         @JvmField
-        val CREATOR = object : Parcelable.Creator<RemoteInvocationRequest> {
-            override fun createFromParcel(parcel: Parcel): RemoteInvocationRequest {
-                return RemoteInvocationRequest(parcel)
+        val CREATOR = object : Parcelable.Creator<AndroidInvocationRequest> {
+            override fun createFromParcel(parcel: Parcel): AndroidInvocationRequest {
+                return AndroidInvocationRequest(parcel)
             }
 
-            override fun newArray(size: Int): Array<RemoteInvocationRequest?> {
+            override fun newArray(size: Int): Array<AndroidInvocationRequest?> {
                 return arrayOfNulls(size)
             }
+        }
+    }
+}
+
+data class AndroidSuspendInvocationRequest internal constructor(
+    val className: String,
+    val functionName: String,
+    val classTypesOfFunctionParameter: List<String>,
+    val valuesOfFunctionParameter: List<Any?>,
+    internal val rpCallback: RPCallback,
+) : AIDLRequest, Parcelable {
+
+    constructor(parcel: Parcel) : this(
+        className = requireNotNull(parcel.readString()),
+        functionName = requireNotNull(parcel.readString()),
+        classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
+        valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
+        rpCallback = RPCallback(RPCInterface(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(this.className)
+        parcel.writeString(this.functionName)
+        parcel.writeList(this.classTypesOfFunctionParameter)
+        parcel.writeList(this.valuesOfFunctionParameter)
+        parcel.writeStrongBinder(this.rpCallback.iBinder)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object {
+        private const val serialVersionUID: Long = -3493071081757263356L
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<AndroidSuspendInvocationRequest> {
+            override fun createFromParcel(parcel: Parcel): AndroidSuspendInvocationRequest {
+                return AndroidSuspendInvocationRequest(parcel)
+            }
+
+            override fun newArray(size: Int): Array<AndroidSuspendInvocationRequest?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+}
+
+internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? = null) : AIDLRequest, Parcelable {
+
+    constructor(parcel: Parcel) : this(
+        data = requireNotNull(parcel.readValue(RPCallbackRequest::class.java.classLoader)),
+        throwable = requireNotNull(parcel.readSerializable() as? Throwable)
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeValue(this.data)
+        parcel.writeSerializable(this.throwable)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<RPCallbackRequest> {
+        private const val serialVersionUID: Long = 5429308687547226465L
+
+        override fun createFromParcel(parcel: Parcel): RPCallbackRequest {
+            return RPCallbackRequest(parcel)
+        }
+
+        override fun newArray(size: Int): Array<RPCallbackRequest?> {
+            return arrayOfNulls(size)
+        }
+    }
+
+}
+
+internal data class AttachReCorrelatorRequest(
+    val rpCorrelator: RPCorrelator
+) : AIDLRequest, Parcelable {
+
+    constructor(parcel: Parcel) : this(
+        rpCorrelator = RPCorrelator(
+            rpcInterface = RPCInterface(
+                function = Function.Stub.asInterface(
+                    requireNotNull(
+                        parcel.readStrongBinder()
+                    )
+                )
+            )
+        )
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeStrongBinder(this.rpCorrelator.iBinder)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<AttachReCorrelatorRequest> {
+        private const val serialVersionUID: Long = -3271507829792609368L
+
+        override fun createFromParcel(parcel: Parcel): AttachReCorrelatorRequest {
+            return AttachReCorrelatorRequest(parcel)
+        }
+
+        override fun newArray(size: Int): Array<AttachReCorrelatorRequest?> {
+            return arrayOfNulls(size)
         }
     }
 }

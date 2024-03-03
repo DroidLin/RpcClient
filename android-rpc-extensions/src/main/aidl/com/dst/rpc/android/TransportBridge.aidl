@@ -1,3 +1,3 @@
 package com.dst.rpc.android;
 
-parcelable Bridge;
+parcelable TransportBridge;

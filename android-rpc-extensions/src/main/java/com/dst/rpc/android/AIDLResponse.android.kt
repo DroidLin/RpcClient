@@ -3,15 +3,17 @@ package com.dst.rpc.android
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import java.io.Serial
 
-data class RemoteInvocationResponse(
-    val data: Any?,
-    val throwable: Throwable? = null
+internal data class AndroidParcelableInvocationResponse(
+    override val data: Any?,
+    override val throwable: Throwable? = null
 ) : AIDLResponse, Parcelable {
+
     constructor(parcel: Parcel) : this(
-        parcel.readValue(RemoteInvocationResponse::class.java.classLoader),
+        parcel.readValue(AndroidParcelableInvocationResponse::class.java.classLoader),
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            parcel.readSerializable(RemoteInvocationResponse::class.java.classLoader, Throwable::class.java)
+            parcel.readSerializable(AndroidParcelableInvocationResponse::class.java.classLoader, Throwable::class.java)
         } else parcel.readSerializable() as? Throwable
     )
 
@@ -28,15 +30,24 @@ data class RemoteInvocationResponse(
         private const val serialVersionUID: Long = -7034334841970619516L
 
         @JvmField
-        val CREATOR = object : Parcelable.Creator<RemoteInvocationResponse> {
-            override fun createFromParcel(parcel: Parcel): RemoteInvocationResponse {
-                return RemoteInvocationResponse(parcel)
+        val CREATOR = object : Parcelable.Creator<AndroidParcelableInvocationResponse> {
+            override fun createFromParcel(parcel: Parcel): AndroidParcelableInvocationResponse {
+                return AndroidParcelableInvocationResponse(parcel)
             }
 
-            override fun newArray(size: Int): Array<RemoteInvocationResponse?> {
+            override fun newArray(size: Int): Array<AndroidParcelableInvocationResponse?> {
                 return arrayOfNulls(size)
             }
         }
     }
+}
 
+internal data class AndroidParcelableInvocationInternalErrorResponse(
+    override val throwable: Throwable?
+) : AIDLResponse {
+    override val data: Any? get() = null
+
+    companion object {
+        private const val serialVersionUID: Long = -6686492997033198982L
+    }
 }

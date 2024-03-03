@@ -1,8 +1,8 @@
 package com.dst.rpc.android;
 
-import com.dst.rpc.android.Bridge;
+import com.dst.rpc.android.TransportBridge;
 
 interface Function {
 
-    void invoke(inout Bridge bridge);
+    void invoke(inout TransportBridge bridge);
 }

@@ -9,10 +9,10 @@ import java.io.Serializable
  * @author liuzhongao
  * @since 2024/3/1 16:23
  */
-class Bridge : Parcelable, Serializable {
+internal class TransportBridge : Parcelable, Serializable {
 
     @Transient
-    private var _next: Bridge? = null
+    private var _next: TransportBridge? = null
 
     internal val innerParameterMap: MutableMap<String, Any?> = HashMap()
 
@@ -24,8 +24,8 @@ class Bridge : Parcelable, Serializable {
 
     fun readFromParcel(parcel: Parcel) {
         val parcelableMap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            parcel.readHashMap(Bridge::class.java.classLoader, String::class.java, Any::class.java)
-        } else parcel.readHashMap(Bridge::class.java.classLoader) as? MutableMap<String, Any?>
+            parcel.readHashMap(TransportBridge::class.java.classLoader, String::class.java, Any::class.java)
+        } else parcel.readHashMap(TransportBridge::class.java.classLoader) as? MutableMap<String, Any?>
         if (parcelableMap != null) {
             this.innerParameterMap.clear()
             this.innerParameterMap.putAll(parcelableMap)
@@ -40,27 +40,26 @@ class Bridge : Parcelable, Serializable {
         return 0
     }
 
-    fun recycle() {
+    fun release() {
         this.innerParameterMap.clear()
-        recycle(this)
     }
 
     companion object {
         private const val serialVersionUID: Long = -90000007L
-        private var bridgeParameterHead: Bridge? = null
+        private var bridgeParameterHead: TransportBridge? = null
         @JvmField
-        val CREATOR = object : Parcelable.Creator<Bridge> {
-            override fun createFromParcel(parcel: Parcel): Bridge {
-                return Bridge(parcel)
+        val CREATOR = object : Parcelable.Creator<TransportBridge> {
+            override fun createFromParcel(parcel: Parcel): TransportBridge {
+                return TransportBridge(parcel)
             }
 
-            override fun newArray(size: Int): Array<Bridge?> {
+            override fun newArray(size: Int): Array<TransportBridge?> {
                 return arrayOfNulls(size)
             }
         }
 
         @JvmStatic
-        fun obtain(): Bridge {
+        fun obtain(): TransportBridge {
             synchronized(this) {
                 val head = this.bridgeParameterHead
                 if (head != null) {
@@ -69,14 +68,15 @@ class Bridge : Parcelable, Serializable {
                     return head
                 }
             }
-            return Bridge()
+            return TransportBridge()
         }
 
         @JvmStatic
-        private fun recycle(bridgeParameter: Bridge) {
+        fun recycle(transportBridge: TransportBridge) {
             synchronized(this) {
-                bridgeParameter._next = this.bridgeParameterHead
-                this.bridgeParameterHead = bridgeParameter
+                transportBridge.release()
+                transportBridge._next = this.bridgeParameterHead
+                this.bridgeParameterHead = transportBridge
             }
         }
     }

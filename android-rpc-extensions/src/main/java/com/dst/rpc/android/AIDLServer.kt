@@ -1,22 +1,18 @@
 package com.dst.rpc.android
 
-import android.os.Handler
-import android.os.Looper
-import com.dst.rpc.Callback
-import com.dst.rpc.Request
 import com.dst.rpc.Server
 
 /**
  * @author liuzhongao
- * @since 2024/3/1 17:41
+ * @since 2024/3/2 14:54
  */
 internal class AIDLServer : Server<AIDLRequest, AIDLResponse> {
 
-    private val mainHandler = Handler(Looper.getMainLooper())
+    val rpcInterface = RPCInterface { request ->
+        invoke(request as AIDLRequest)
+    }
 
-    override fun isSupported(request: Request): Boolean = request is AIDLRequest
-
-    override fun execute(request: AIDLRequest, callback: Callback<AIDLResponse>) {
+    override fun invoke(request: AIDLRequest): AIDLResponse {
         TODO("Not yet implemented")
     }
 }

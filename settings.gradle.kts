@@ -17,3 +17,6 @@ rootProject.name = "DstRpcClient"
 include(":app")
 include(":core-rpc")
 include(":android-rpc-extensions")
+include(":core-rpc-annotation")
+include("socket-rpc-extensions")
+include(":socket-rpc-extensions")
