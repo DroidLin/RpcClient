@@ -24,8 +24,6 @@ interface Client {
      */
     interface Factory {
 
-        fun collectConnection(address: RPCAddress, connection: Connection)
-
         fun acceptAddress(address: RPCAddress): Boolean
 
         fun newServer(initConfig: InitConfig): Client
@@ -60,10 +58,6 @@ interface Client {
         ): Connection {
             this.collectClientFactories()
             return this.acquireClient(remoteAddress = remoteAddress).openConnection(sourceAddress, remoteAddress, exceptionHandler)
-        }
-
-        fun collectConnection(address: RPCAddress, connection: Connection) {
-            this.remoteClientFactoryMap.find { it.acceptAddress(address) }?.collectConnection(address, connection)
         }
 
         fun <T : INoProguard> getService(clazz: Class<T>): T {

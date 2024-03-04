@@ -5,11 +5,11 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import com.dst.rpc.Client
 import com.dst.rpc.android.AIDLClient
 import com.dst.rpc.android.AIDLConnection
 import com.dst.rpc.android.AIDLRPCAddress
 import com.dst.rpc.android.RPContext
+import kotlinx.coroutines.CompletableDeferred
 
 /**
  * @author liuzhongao
@@ -30,7 +30,7 @@ abstract class AbstractRPContentProvider : ContentProvider() {
         val rpContext = extras?.rpcContext ?: return null
         if (this.addressOfCurrentProvider == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            Client.collectConnection(rpContext.sourceAddress, AIDLConnection(rpContext.rpCorrelator))
+            AIDLClient.acceptConnectionTask(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
             AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
         }
         return null
