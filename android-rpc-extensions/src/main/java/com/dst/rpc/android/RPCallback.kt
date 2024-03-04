@@ -32,7 +32,7 @@ private class RPCallbackStub(private val block: RPCallbackStubInnerBlock) : RPCa
         if (request is RPCallbackRequest) {
             callback(data = request.data, throwable = request.throwable)
         }
-        AIDLResponse
+        Response
     }
 
     override fun callback(data: Any?, throwable: Throwable?) {

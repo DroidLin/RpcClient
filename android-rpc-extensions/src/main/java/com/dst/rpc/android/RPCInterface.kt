@@ -2,7 +2,6 @@ package com.dst.rpc.android
 
 import android.os.IBinder
 import com.dst.rpc.INoProguard
-import com.dst.rpc.Response
 import java.util.*
 
 /**
@@ -13,7 +12,7 @@ internal interface RPCInterface : INoProguard {
 
     val isAlive: Boolean
 
-    fun invoke(request: AIDLRequest): AIDLResponse
+    fun invoke(request: Request): Response
 
     fun addDeathListener(deathListener: DeathListener) {}
 
@@ -34,9 +33,9 @@ internal val RPCInterface.iBinder: IBinder
 
 internal fun RPCInterface(function: Function): RPCInterface = RPCInterfaceImpl(function = function)
 
-internal fun RPCInterface(block: (AIDLRequest) -> AIDLResponse): RPCInterface {
+internal fun RPCInterface(block: (Request) -> Response): RPCInterface {
     return object : RPCInterfaceImplStub() {
-        override fun invoke(request: AIDLRequest): AIDLResponse = block(request)
+        override fun invoke(request: Request): Response = block(request)
     }
 }
 
@@ -59,19 +58,19 @@ private class RPCInterfaceImpl(val function: Function) : RPCInterface {
         this.function.asBinder().linkToDeath(this.deathRecipient, 0)
     }
 
-    override fun invoke(request: AIDLRequest): AIDLResponse {
+    override fun invoke(request: Request): Response {
         val transportBridge = TransportBridge.obtain()
-        var response: AIDLResponse? = null
+        var response: Response? = null
         try {
             transportBridge.request = request
             this.function.invoke(transportBridge)
-            response = transportBridge.response as? AIDLResponse
+            response = transportBridge.response as? Response
         } catch (throwable: Throwable) {
             response = AndroidParcelableInvocationInternalErrorResponse(throwable)
         } finally {
             TransportBridge.recycle(transportBridge)
         }
-        return response ?: AIDLResponse
+        return response ?: Response
     }
 
     override fun addDeathListener(deathListener: RPCInterface.DeathListener) {
@@ -92,7 +91,7 @@ private abstract class RPCInterfaceImplStub : RPCInterface {
     val function = object : Function.Stub() {
         override fun invoke(bridge: TransportBridge?) {
             val request = bridge?.request
-            bridge?.response = if (request != null && request is AIDLRequest) {
+            bridge?.response = if (request != null && request is Request) {
                 this@RPCInterfaceImplStub.invoke(request)
             } else Response
         }

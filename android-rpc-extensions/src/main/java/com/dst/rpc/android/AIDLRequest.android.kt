@@ -1,16 +1,14 @@
 package com.dst.rpc.android
 
-import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
-import com.dst.rpc.Request
 
 internal data class AndroidInvocationRequest(
     val className: String,
     val functionName: String,
     val classTypesOfFunctionParameter: List<String>,
     val valuesOfFunctionParameter: List<Any?>,
-) : AIDLRequest, Parcelable {
+) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
         className = requireNotNull(parcel.readString()),
@@ -52,7 +50,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
     val classTypesOfFunctionParameter: List<String>,
     val valuesOfFunctionParameter: List<Any?>,
     internal val rpCallback: RPCallback,
-) : AIDLRequest, Parcelable {
+) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
         className = requireNotNull(parcel.readString()),
@@ -90,7 +88,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
     }
 }
 
-internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? = null) : AIDLRequest, Parcelable {
+internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? = null) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
         data = requireNotNull(parcel.readValue(RPCallbackRequest::class.java.classLoader)),
@@ -122,7 +120,7 @@ internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? 
 
 internal data class AttachReCorrelatorRequest(
     val rpCorrelator: RPCorrelator
-) : AIDLRequest, Parcelable {
+) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
         rpCorrelator = RPCorrelator(

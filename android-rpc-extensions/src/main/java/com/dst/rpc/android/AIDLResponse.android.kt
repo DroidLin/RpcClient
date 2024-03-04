@@ -3,12 +3,11 @@ package com.dst.rpc.android
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
-import java.io.Serial
 
 internal data class AndroidParcelableInvocationResponse(
     override val data: Any?,
     override val throwable: Throwable? = null
-) : AIDLResponse, Parcelable {
+) : Response, Parcelable {
 
     constructor(parcel: Parcel) : this(
         parcel.readValue(AndroidParcelableInvocationResponse::class.java.classLoader),
@@ -44,7 +43,7 @@ internal data class AndroidParcelableInvocationResponse(
 
 internal data class AndroidParcelableInvocationInternalErrorResponse(
     override val throwable: Throwable?
-) : AIDLResponse {
+) : Response {
     override val data: Any? get() = null
 
     companion object {

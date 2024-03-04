@@ -8,17 +8,16 @@ import java.util.ServiceLoader
  */
 interface Client {
 
-    suspend fun openConnection(sourceAddress: RPCAddress, remoteAddress: RPCAddress): Connection
-
-    suspend fun execute(
+    suspend fun openConnection(
         sourceAddress: RPCAddress,
         remoteAddress: RPCAddress,
-        functionOwner: Class<*>,
-        functionName: String,
-        functionParameterTypes: List<Class<*>>,
-        functionParameterValues: List<Any?>,
-        isSuspended: Boolean
-    ): Any?
+    ): Connection
+
+    suspend fun openConnection(
+        sourceAddress: RPCAddress,
+        remoteAddress: RPCAddress,
+        exceptionHandler: ExceptionHandler
+    ): Connection
 
     /**
      * used to create Server based on current dependencies.
@@ -42,26 +41,21 @@ interface Client {
             this.initConfig = initConfig
         }
 
-        override suspend fun execute(
+        override suspend fun openConnection(
+            sourceAddress: RPCAddress,
+            remoteAddress: RPCAddress
+        ): Connection {
+            this.collectClientFactories()
+            return this.acquireClient(remoteAddress = remoteAddress).openConnection(sourceAddress, remoteAddress)
+        }
+
+        override suspend fun openConnection(
             sourceAddress: RPCAddress,
             remoteAddress: RPCAddress,
-            functionOwner: Class<*>,
-            functionName: String,
-            functionParameterTypes: List<Class<*>>,
-            functionParameterValues: List<Any?>,
-            isSuspended: Boolean
-        ): Any? {
+            exceptionHandler: ExceptionHandler
+        ): Connection {
             this.collectClientFactories()
-            val targetServer = getClient(remoteAddress = remoteAddress)
-            return targetServer?.execute(
-                sourceAddress = sourceAddress,
-                remoteAddress = remoteAddress,
-                functionOwner = functionOwner,
-                functionName = functionName,
-                functionParameterTypes = functionParameterTypes,
-                functionParameterValues = functionParameterValues,
-                isSuspended = isSuspended,
-            )
+            return this.acquireClient(remoteAddress = remoteAddress).openConnection(sourceAddress, remoteAddress, exceptionHandler)
         }
 
         private fun collectClientFactories() {
@@ -78,7 +72,7 @@ interface Client {
             }
         }
 
-        private fun getClient(remoteAddress: RPCAddress): Client? {
+        private fun acquireClient(remoteAddress: RPCAddress): Client {
             if (this.remoteClientImplMap[remoteAddress.value] == null) {
                 synchronized(this) {
                     if (this.remoteClientImplMap[remoteAddress.value] == null) {
@@ -90,7 +84,9 @@ interface Client {
                     }
                 }
             }
-            return this.remoteClientImplMap[remoteAddress.value] as? Client
+            return requireNotNull(this.remoteClientImplMap[remoteAddress.value]) {
+                "no factory accept address : $remoteAddress"
+            }
         }
     }
 }

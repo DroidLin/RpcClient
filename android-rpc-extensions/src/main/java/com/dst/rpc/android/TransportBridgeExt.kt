@@ -1,8 +1,5 @@
 package com.dst.rpc.android
 
-import com.dst.rpc.Request
-import com.dst.rpc.Response
-
 private const val KEY_REQUEST = "KEY_REQUEST"
 private const val KEY_RESPONSE = "KEY_RESPONSE"
 

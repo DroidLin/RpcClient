@@ -1,6 +1,5 @@
-package com.dst.rpc
+package com.dst.rpc.android
 
-import java.io.Serial
 import java.io.Serializable
 
 /**

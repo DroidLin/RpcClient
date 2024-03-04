@@ -6,6 +6,8 @@ package com.dst.rpc
  */
 interface Connection {
 
+    val isClosed: Boolean
+
     suspend fun call(
         functionOwner: Class<*>,
         functionName: String,

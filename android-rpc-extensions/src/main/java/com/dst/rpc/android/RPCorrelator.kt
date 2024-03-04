@@ -1,7 +1,6 @@
 package com.dst.rpc.android
 
 import android.os.IBinder
-import com.dst.rpc.InvocationRequest
 import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -15,6 +14,8 @@ import kotlin.coroutines.resumeWithException
  * @since 2024/3/3 16:22
  */
 internal interface RPCorrelator {
+
+    val isOpen: Boolean get() = false
 
     fun attachCorrelator(correlator: RPCorrelator) {}
 
@@ -45,6 +46,8 @@ internal fun RPCorrelator(rpCorrelator: RPCorrelator): RPCorrelator = RPCorrelat
 internal fun RPCorrelator(rpcInterface: RPCInterface): RPCorrelator = RPCorrelatorProxy(rpcInterface)
 
 private class RPCorrelatorProxy(val rpcInterface: RPCInterface) : RPCorrelator {
+    override val isOpen: Boolean get() = rpcInterface.isAlive
+
     override fun attachCorrelator(correlator: RPCorrelator) {
         val request = AttachReCorrelatorRequest(correlator)
         this.rpcInterface.invoke(request = request)
@@ -115,7 +118,9 @@ private class RPCorrelatorProxy(val rpcInterface: RPCInterface) : RPCorrelator {
     }
 }
 
-private class RPCorrelatorStub(private val rpCorrelator: RPCorrelator) : RPCorrelator by rpCorrelator{
+private class RPCorrelatorStub(private val rpCorrelator: RPCorrelator) : RPCorrelator by rpCorrelator {
+
+    override val isOpen: Boolean get() = true
 
     val rpcInterface = RPCInterface { aidlRequest ->
         val result = kotlin.runCatching {

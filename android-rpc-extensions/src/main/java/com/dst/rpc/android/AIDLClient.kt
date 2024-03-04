@@ -3,8 +3,6 @@ package com.dst.rpc.android
 import android.app.Service
 import android.content.Context
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import com.dst.rpc.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -23,53 +21,29 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
     private val androidContext: Context = initConfig.androidContext
 
     private val coroutineScope = CoroutineScope(this.coroutineContext)
-    private val innerRPCorrelatorCache: MutableMap<String, Deferred<RPCorrelator>> = HashMap()
+    private val innerRPCorrelatorCache: MutableMap<String, Deferred<Connection>> = HashMap()
 
-    override suspend fun execute(
+    override suspend fun openConnection(
+        sourceAddress: RPCAddress,
+        remoteAddress: RPCAddress
+    ): Connection = this.openConnection(sourceAddress, remoteAddress) { false }
+
+    override suspend fun openConnection(
         sourceAddress: RPCAddress,
         remoteAddress: RPCAddress,
-        functionOwner: Class<*>,
-        functionName: String,
-        functionParameterTypes: List<Class<*>>,
-        functionParameterValues: List<Any?>,
-        isSuspended: Boolean
-    ): Any? {
-        assertWorkerThread()
-        val rpcInterface = this.acquireBinderConnection(sourceAddress = sourceAddress, remoteAddress = remoteAddress)
-        val result = kotlin.runCatching {
-            if (isSuspended) {
-                rpcInterface.callSuspendFunction(
-                    functionOwner = functionOwner,
-                    functionName = functionName,
-                    argumentTypes = functionParameterTypes.filter { it != Continuation::class.java },
-                    argumentValue = functionParameterValues.filter { it !is Continuation<*>  }
-                )
-            } else {
-                rpcInterface.callFunction(
-                    functionOwner = functionOwner,
-                    functionName = functionName,
-                    argumentTypes = functionParameterTypes,
-                    argumentValue = functionParameterValues
-                )
-            }
-        }
-        val throwable = result.exceptionOrNull()
-        if (result.isFailure && throwable != null) {
-            if (rootExceptionHandler.handle(throwable = throwable)) {
-                return null
-            }
-            throw UnHandledRuntimeException(throwable)
-        }
-        return result.getOrNull()
-    }
+        exceptionHandler: ExceptionHandler
+    ): Connection = ExceptionHandleConnection(rootExceptionHandler + exceptionHandler) { this.acquireRPCorrelator(sourceAddress, remoteAddress) }
 
     /**
      * try to connect to remote process.
      */
-    private suspend fun acquireBinderConnection(sourceAddress: RPCAddress, remoteAddress: RPCAddress): RPCorrelator {
+    private suspend fun acquireRPCorrelator(sourceAddress: RPCAddress, remoteAddress: RPCAddress): Connection {
         val existingConnectionOperation = this.innerRPCorrelatorCache[remoteAddress.value]
         if (existingConnectionOperation != null) {
-            return existingConnectionOperation.await()
+            val connection = existingConnectionOperation.await()
+            if (!connection.isClosed) {
+                return connection
+            }
         }
         val connectionOperation = this.coroutineScope.async {
             suspendCoroutine { continuation ->
@@ -80,7 +54,7 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                 val localRPCorrelator = RPCorrelator(rpCorrelator = object : RPCorrelator {
                     override fun attachCorrelator(correlator: RPCorrelator) {
                         timeoutJob.cancel()
-                        continuation.resume(correlator)
+                        continuation.resume(AIDLConnection(correlator))
                     }
                 })
                 val rpContext = RPContext(
