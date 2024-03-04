@@ -31,7 +31,7 @@ interface Client {
 
     companion object : Client {
 
-        private val interfaceImplementationReference = HashMap<Class<*>, Any>()
+        private val interfaceImplementationReference = HashMap<Class<*>, INoProguard>()
 
         private val remoteClientFactoryMap: MutableList<Factory> = ArrayList()
         private val remoteClientImplMap: MutableMap<String, Client> = HashMap()
