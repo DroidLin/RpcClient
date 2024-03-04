@@ -21,7 +21,6 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
     private val androidContext: Context = initConfig.androidContext
 
     private val coroutineScope = CoroutineScope(this.coroutineContext)
-    private val innerRPCorrelatorCache: MutableMap<String, Deferred<Connection>> = HashMap()
 
     override suspend fun openConnection(
         sourceAddress: RPCAddress,
@@ -32,13 +31,17 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
         sourceAddress: RPCAddress,
         remoteAddress: RPCAddress,
         exceptionHandler: ExceptionHandler
-    ): Connection = ExceptionHandleConnection(rootExceptionHandler + exceptionHandler) { this.acquireRPCorrelator(sourceAddress, remoteAddress) }
+    ): Connection {
+        val combinedExceptionHandler = exceptionHandler + this.rootExceptionHandler
+        val rawConnectionProvider = suspend { this.acquireRPCorrelator(sourceAddress, remoteAddress) }
+        return ExceptionHandleConnection(combinedExceptionHandler, rawConnectionProvider)
+    }
 
     /**
      * try to connect to remote process.
      */
     private suspend fun acquireRPCorrelator(sourceAddress: RPCAddress, remoteAddress: RPCAddress): Connection {
-        val existingConnectionOperation = this.innerRPCorrelatorCache[remoteAddress.value]
+        val existingConnectionOperation = acquireConnectionTask(remoteAddress)
         if (existingConnectionOperation != null) {
             val connection = existingConnectionOperation.await()
             if (!connection.isClosed) {
@@ -51,7 +54,7 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                     delay(this@AIDLClient.connectTimeout)
                     continuation.resumeWithException(exception = RuntimeException("fail to connection to remote: ${remoteAddress.value} after ${this@AIDLClient.connectTimeout}ms."))
                 }
-                val localRPCorrelator = RPCorrelator(rpCorrelator = object : RPCorrelator {
+                val localRPCorrelator = RPCorrelator(rpCorrelator = object : FunctionCallerCorrelator() {
                     override fun attachCorrelator(correlator: RPCorrelator) {
                         timeoutJob.cancel()
                         continuation.resume(AIDLConnection(correlator))
@@ -66,21 +69,28 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                 AIDLConnector.attach(strategy = this@AIDLClient.strategy, rpContext = rpContext, androidContext = this@AIDLClient.androidContext)
             }
         }
-        this.innerRPCorrelatorCache[remoteAddress.value] = connectionOperation
+        acceptConnectionTask(remoteAddress, connectionOperation)
         return connectionOperation.await()
     }
 
-    /**
-     * factory that accept address like ``` "android://[hostKey]:[port] ```
-     */
-    class AIDLClientFactory : Client.Factory {
+    companion object {
+        private val innerConnectionCache: MutableMap<String, Deferred<Connection>> = HashMap()
 
-        override fun acceptAddress(address: RPCAddress): Boolean {
-            return address.scheme == "android"
+        internal fun acquireConnectionTask(rpcAddress: RPCAddress): Deferred<Connection>? {
+            return synchronized(this.innerConnectionCache) {
+                this.innerConnectionCache[rpcAddress.value]
+            }
         }
 
-        override fun newServer(initConfig: InitConfig): Client {
-            return AIDLClient(initConfig = initConfig)
+        internal fun acceptConnectionTask(rpcAddress: RPCAddress, deferred: Deferred<Connection>) {
+            synchronized(this.innerConnectionCache) {
+                this.innerConnectionCache[rpcAddress.value] = deferred
+            }
+        }
+
+        internal fun twoWayConnectionEstablish(remoteRPCorrelator: RPCorrelator) {
+            val localRPCorrelator = object : FunctionCallerCorrelator() {}
+            remoteRPCorrelator.attachCorrelator(localRPCorrelator)
         }
     }
 }

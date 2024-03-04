@@ -3,6 +3,9 @@ package com.dst.rpc.android.component
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.dst.rpc.Client
+import com.dst.rpc.android.AIDLClient
+import com.dst.rpc.android.AIDLConnection
 import com.dst.rpc.android.AIDLRPCAddress
 import com.dst.rpc.android.RPContext
 
@@ -14,13 +17,14 @@ abstract class AbstractRPCBroadcastReceiver : BroadcastReceiver() {
 
     protected abstract val addressOfCurrentReceiver: AIDLRPCAddress
 
-    abstract fun onReceiveRPConnection(context: RPContext)
+    protected abstract fun onReceiveRPConnection(context: RPContext)
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val rpContext = intent?.rpcContext ?: return
         if (this.addressOfCurrentReceiver == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            TODO("collect connection")
+            Client.collectConnection(rpContext.sourceAddress, AIDLConnection(rpContext.rpCorrelator))
+            AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
         }
     }
 }

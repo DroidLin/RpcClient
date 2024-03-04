@@ -5,6 +5,9 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
+import com.dst.rpc.Client
+import com.dst.rpc.android.AIDLClient
+import com.dst.rpc.android.AIDLConnection
 import com.dst.rpc.android.AIDLRPCAddress
 import com.dst.rpc.android.RPContext
 
@@ -16,7 +19,7 @@ abstract class AbstractRPContentProvider : ContentProvider() {
 
     protected abstract val addressOfCurrentProvider: AIDLRPCAddress
 
-    abstract fun onReceiveRPConnection(context: RPContext)
+    protected abstract fun onReceiveRPConnection(context: RPContext)
 
     override fun onCreate(): Boolean = true
 
@@ -27,7 +30,8 @@ abstract class AbstractRPContentProvider : ContentProvider() {
         val rpContext = extras?.rpcContext ?: return null
         if (this.addressOfCurrentProvider == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            TODO("collect connection")
+            Client.collectConnection(rpContext.sourceAddress, AIDLConnection(rpContext.rpCorrelator))
+            AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
         }
         return null
     }

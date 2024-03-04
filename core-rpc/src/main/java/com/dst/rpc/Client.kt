@@ -24,6 +24,8 @@ interface Client {
      */
     interface Factory {
 
+        fun collectConnection(address: RPCAddress, connection: Connection)
+
         fun acceptAddress(address: RPCAddress): Boolean
 
         fun newServer(initConfig: InitConfig): Client
@@ -31,7 +33,9 @@ interface Client {
 
     companion object : Client {
 
-        private val remoteClientFactoryMap: MutableList<Client.Factory> = ArrayList()
+        private val interfaceImplementationReference = HashMap<Class<*>, Any>()
+
+        private val remoteClientFactoryMap: MutableList<Factory> = ArrayList()
         private val remoteClientImplMap: MutableMap<String, Client> = HashMap()
 
         private lateinit var initConfig: InitConfig
@@ -58,11 +62,23 @@ interface Client {
             return this.acquireClient(remoteAddress = remoteAddress).openConnection(sourceAddress, remoteAddress, exceptionHandler)
         }
 
+        fun collectConnection(address: RPCAddress, connection: Connection) {
+            this.remoteClientFactoryMap.find { it.acceptAddress(address) }?.collectConnection(address, connection)
+        }
+
+        fun <T : INoProguard> getService(clazz: Class<T>): T {
+            return requireNotNull(this.interfaceImplementationReference[clazz] as? T)
+        }
+
+        fun <T : INoProguard> putService(clazz: Class<T>, impl: T) {
+            this.interfaceImplementationReference[clazz] = impl
+        }
+
         private fun collectClientFactories() {
             if (this.remoteClientFactoryMap.isEmpty()) {
                 synchronized(this) {
                     if (this.remoteClientFactoryMap.isEmpty()) {
-                        val tempFactoryList = ServiceLoader.load(Client.Factory::class.java).toList()
+                        val tempFactoryList = ServiceLoader.load(Factory::class.java).toList()
                         this.remoteClientFactoryMap += tempFactoryList
                     }
                 }

@@ -17,7 +17,7 @@ internal interface RPCorrelator {
 
     val isOpen: Boolean get() = false
 
-    fun attachCorrelator(correlator: RPCorrelator) {}
+    fun attachCorrelator(correlator: RPCorrelator)
 
     fun callFunction(
         functionOwner: Class<*>,
@@ -125,35 +125,25 @@ private class RPCorrelatorStub(private val rpCorrelator: RPCorrelator) : RPCorre
     val rpcInterface = RPCInterface { aidlRequest ->
         val result = kotlin.runCatching {
             when (aidlRequest) {
-                is AndroidInvocationRequest -> {
-                    this.callFunction(
-                        functionOwner = aidlRequest.className.stringTypeConvert,
-                        functionName = aidlRequest.functionName,
-                        argumentTypes = aidlRequest.classTypesOfFunctionParameter.stringTypeConvert,
-                        argumentValue = aidlRequest.valuesOfFunctionParameter,
-                    )
-                }
+                is AndroidInvocationRequest -> this.callFunction(
+                    functionOwner = aidlRequest.className.stringTypeConvert,
+                    functionName = aidlRequest.functionName,
+                    argumentTypes = aidlRequest.classTypesOfFunctionParameter.stringTypeConvert,
+                    argumentValue = aidlRequest.valuesOfFunctionParameter,
+                )
                 is AndroidSuspendInvocationRequest -> {
                     val continuation = object : Continuation<Any?> {
                         override val context: CoroutineContext get() = Dispatchers.Default
                         override fun resumeWith(result: Result<Any?>) = aidlRequest.rpCallback.callback(result.getOrNull(), result.exceptionOrNull())
                     }
-                    val oneShotContinuation = OneShotContinuation<Any?>(continuation)
+                    val oneShotContinuation = OneShotContinuation(continuation)
                     (this::callSuspendFunction as Function5<Class<*>, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
-                        .invoke(
-                            aidlRequest.className.stringTypeConvert,
-                            aidlRequest.functionName,
-                            aidlRequest.classTypesOfFunctionParameter.stringTypeConvert,
-                            aidlRequest.valuesOfFunctionParameter,
-                            oneShotContinuation
-                        )
+                        .invoke(aidlRequest.className.stringTypeConvert, aidlRequest.functionName, aidlRequest.classTypesOfFunctionParameter.stringTypeConvert, aidlRequest.valuesOfFunctionParameter, oneShotContinuation)
                 }
-                is AttachReCorrelatorRequest -> {
-                    this.attachCorrelator(correlator = aidlRequest.rpCorrelator)
-                }
+                is AttachReCorrelatorRequest -> this.attachCorrelator(correlator = aidlRequest.rpCorrelator)
                 else -> null
             }
         }
-        AndroidParcelableInvocationResponse(data = result.getOrNull(), throwable = result.exceptionOrNull())
+        AndroidParcelableInvocationResponse(data = result.getOrNull()?.safeUnbox(), throwable = result.exceptionOrNull())
     }
 }

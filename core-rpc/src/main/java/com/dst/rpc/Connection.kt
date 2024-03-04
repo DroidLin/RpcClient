@@ -1,6 +1,8 @@
 package com.dst.rpc
 
 /**
+ * entrance to invoke remote process function.
+ *
  * @author liuzhongao
  * @since 2024/3/3 23:25
  */

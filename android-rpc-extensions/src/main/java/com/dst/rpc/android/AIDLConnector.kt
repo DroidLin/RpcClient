@@ -4,7 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import com.dst.rpc.InitConfig
 import com.dst.rpc.android.component.rpcContext
 
 /**
@@ -19,11 +18,11 @@ internal interface AIDLConnector {
         @JvmStatic
         fun attach(strategy: EstablishStrategy, rpContext: RPContext, androidContext: Context) {
             when (strategy) {
-                EstablishStrategy.ContentProvider -> AndroidContentProviderConnector.attach(androidContext, rpContext)
-                EstablishStrategy.BroadcastReceiver -> AndroidBroadcastReceiverConnector.attach(androidContext, rpContext)
-                EstablishStrategy.Service -> AndroidServiceConnector.attach(androidContext, rpContext)
+                EstablishStrategy.ContentProvider -> AndroidContentProviderConnector
+                EstablishStrategy.BroadcastReceiver -> AndroidBroadcastReceiverConnector
+                EstablishStrategy.Service -> AndroidServiceConnector
                 else -> throw RuntimeException("unknown EstablishStrategy: ${strategy}")
-            }
+            }.attach(androidContext, rpContext)
         }
     }
 }

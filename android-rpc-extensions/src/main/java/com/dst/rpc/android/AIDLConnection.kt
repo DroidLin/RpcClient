@@ -6,6 +6,11 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.Continuation
 
 /**
+ * android based connection, using aidl component.
+ *
+ * while launch remote calls, we assume [rpCorrelator] is always alive.
+ * will not handle any exceptions through remote calls.
+ *
  * @author liuzhongao
  * @since 2024/3/4 11:13
  */

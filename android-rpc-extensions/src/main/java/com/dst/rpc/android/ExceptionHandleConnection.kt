@@ -9,7 +9,10 @@ import com.dst.rpc.ExceptionHandler
  */
 internal class ExceptionHandleConnection(
     private val exceptionHandler: ExceptionHandler,
-    private val rawConnectionFetcher: suspend () -> Connection
+    /**
+     * find the latest connection for remote process call, may suspend while connection is not established.
+     */
+    private val rawConnectionProvider: suspend () -> Connection
 ) : Connection {
 
     override val isClosed: Boolean get() = true
@@ -22,7 +25,7 @@ internal class ExceptionHandleConnection(
         isSuspended: Boolean
     ): Any? {
         val result = kotlin.runCatching {
-            this.rawConnectionFetcher.invoke().call(
+            this.rawConnectionProvider.invoke().call(
                 functionOwner = functionOwner,
                 functionName = functionName,
                 functionParameterTypes = functionParameterTypes,
