@@ -1,13 +1,10 @@
-package com.dst.rpc.android
-
-import com.dst.rpc.Connection
-import com.dst.rpc.ExceptionHandler
+package com.dst.rpc
 
 /**
  * @author liuzhongao
  * @since 2024/3/4 14:25
  */
-internal class ExceptionHandleConnection(
+class ExceptionHandleConnection(
     private val exceptionHandler: ExceptionHandler,
     /**
      * find the latest connection for remote process call, may suspend while connection is not established.

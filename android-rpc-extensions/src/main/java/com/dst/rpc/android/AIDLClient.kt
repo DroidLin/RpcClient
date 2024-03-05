@@ -47,25 +47,27 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                 return connection
             }
         }
-        val connectionOperation = this.coroutineScope.async {
-            suspendCoroutine { continuation ->
-                val timeoutJob = launch {
-                    delay(this@AIDLClient.connectTimeout)
-                    continuation.resumeWithException(exception = RuntimeException("fail to connection to remote: ${remoteAddress.value} after ${this@AIDLClient.connectTimeout}ms."))
-                }
-                val localRPCorrelator = RPCorrelator(rpCorrelator = object : FunctionCallerCorrelator() {
-                    override fun attachCorrelator(correlator: RPCorrelator) {
-                        timeoutJob.cancel()
-                        continuation.resume(AIDLConnection(correlator))
+        val connectionOperation = coroutineScope {
+            async {
+                suspendCoroutine { continuation ->
+                    val timeoutJob = launch {
+                        delay(this@AIDLClient.connectTimeout)
+                        continuation.resumeWithException(exception = RuntimeException("fail to connection to remote: ${remoteAddress.value} after ${this@AIDLClient.connectTimeout}ms."))
                     }
-                })
-                val rpContext = RPContext(
-                    remoteServiceName = this@AIDLClient.remoteAndroidServiceClass?.name ?: "",
-                    sourceAddress = AndroidRPCAddress(sourceAddress),
-                    remoteAddress = AndroidRPCAddress(remoteAddress),
-                    rpCorrelator = localRPCorrelator
-                )
-                AIDLConnector.attach(strategy = this@AIDLClient.strategy, rpContext = rpContext, androidContext = this@AIDLClient.androidContext)
+                    val localRPCorrelator = RPCorrelator(rpCorrelator = object : FunctionCallerCorrelator() {
+                        override fun attachCorrelator(correlator: RPCorrelator) {
+                            timeoutJob.cancel()
+                            continuation.resume(AIDLConnection(correlator))
+                        }
+                    })
+                    val rpContext = RPContext(
+                        remoteServiceName = this@AIDLClient.remoteAndroidServiceClass?.name ?: "",
+                        sourceAddress = AndroidRPCAddress(sourceAddress),
+                        remoteAddress = AndroidRPCAddress(remoteAddress),
+                        rpCorrelator = localRPCorrelator
+                    )
+                    AIDLConnector.attach(strategy = this@AIDLClient.strategy, rpContext = rpContext, androidContext = this@AIDLClient.androidContext)
+                }
             }
         }
         acceptConnectionTask(remoteAddress, connectionOperation)

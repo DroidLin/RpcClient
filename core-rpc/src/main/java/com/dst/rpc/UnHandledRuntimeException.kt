@@ -1,4 +1,4 @@
-package com.dst.rpc.android
+package com.dst.rpc
 
 /**
  * @author liuzhongao
