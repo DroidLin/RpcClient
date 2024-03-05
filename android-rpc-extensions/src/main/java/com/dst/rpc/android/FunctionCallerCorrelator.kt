@@ -1,6 +1,6 @@
 package com.dst.rpc.android
 
-import com.dst.rpc.Client
+import com.dst.rpc.ClientManager
 import com.dst.rpc.INoProguard
 
 /**
@@ -17,7 +17,7 @@ internal abstract class FunctionCallerCorrelator : RPCorrelator {
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? {
-        val functionOwnerImplementation = Client.getService(functionOwner as Class<INoProguard>)
+        val functionOwnerImplementation = ClientManager.getService(functionOwner as Class<INoProguard>)
         return functionOwner.getDeclaredMethod(functionName, *argumentTypes.toTypedArray())
             .invoke(functionOwnerImplementation, *argumentValue.toTypedArray())
     }
@@ -28,7 +28,7 @@ internal abstract class FunctionCallerCorrelator : RPCorrelator {
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? {
-        val functionOwnerImplementation = Client.getService(functionOwner as Class<INoProguard>)
+        val functionOwnerImplementation = ClientManager.getService(functionOwner as Class<INoProguard>)
         return functionOwner.getDeclaredMethod(functionName, *argumentTypes.toTypedArray())
             .invokeSuspend(functionOwnerImplementation, *argumentValue.toTypedArray())
     }

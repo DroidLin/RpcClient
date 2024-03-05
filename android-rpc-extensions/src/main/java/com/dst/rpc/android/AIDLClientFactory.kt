@@ -13,6 +13,12 @@ class AIDLClientFactory : Client.Factory {
         return address.scheme == "android"
     }
 
+    override fun addressCreate(value: String): RPCAddress? {
+        return if (value.startsWith("android://")) {
+            AndroidRPCAddress(value)
+        } else null
+    }
+
     override fun newServer(initConfig: InitConfig): Client {
         return AIDLClient(initConfig = initConfig)
     }

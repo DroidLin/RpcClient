@@ -4,12 +4,17 @@ import android.net.Uri
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import com.dst.rpc.RPCAddress
 
 /**
  * @author liuzhongao
  * @since 2024/3/3 14:55
  */
 data class AndroidRPCAddress(override val uri: Uri) : AIDLRPCAddress {
+
+    constructor(address: String) : this(Uri.parse(address))
+
+    constructor(rpcAddress: RPCAddress) : this(Uri.parse(rpcAddress.value))
 
     constructor(parcel: Parcel) : this(
         uri = requireNotNull(if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {

@@ -2,7 +2,6 @@ package com.dst.rpc.android
 
 import android.app.Service
 import android.content.Context
-import android.net.Uri
 import com.dst.rpc.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -22,12 +21,12 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
 
     private val coroutineScope = CoroutineScope(this.coroutineContext)
 
-    override suspend fun openConnection(
+    override fun openConnection(
         sourceAddress: RPCAddress,
         remoteAddress: RPCAddress
     ): Connection = this.openConnection(sourceAddress, remoteAddress) { false }
 
-    override suspend fun openConnection(
+    override fun openConnection(
         sourceAddress: RPCAddress,
         remoteAddress: RPCAddress,
         exceptionHandler: ExceptionHandler
@@ -62,8 +61,8 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                 })
                 val rpContext = RPContext(
                     remoteServiceName = this@AIDLClient.remoteAndroidServiceClass?.name ?: "",
-                    sourceAddress = AndroidRPCAddress(Uri.parse(sourceAddress.value)),
-                    remoteAddress = AndroidRPCAddress(Uri.parse(remoteAddress.value)),
+                    sourceAddress = AndroidRPCAddress(sourceAddress),
+                    remoteAddress = AndroidRPCAddress(remoteAddress),
                     rpCorrelator = localRPCorrelator
                 )
                 AIDLConnector.attach(strategy = this@AIDLClient.strategy, rpContext = rpContext, androidContext = this@AIDLClient.androidContext)
