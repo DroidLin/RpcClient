@@ -35,8 +35,7 @@ fun InitConfig.Builder.remoteAndroidServiceClass(clazz: Class<out Service>) =
     this.putExtra(KEY_REMOTE_ANDROID_SERVICE_COMPONENT_CLASS, clazz)
 
 val InitConfig.coroutineContext: CoroutineContext
-    get() = this.extraParameters[KEY_COROUTINE_CONTEXT] as? CoroutineContext
-        ?: EmptyCoroutineContext
+    get() = this.extraParameters[KEY_COROUTINE_CONTEXT] as? CoroutineContext ?: EmptyCoroutineContext
 
 fun InitConfig.Builder.coroutineContext(coroutineContext: CoroutineContext) =
     this.putExtra(KEY_COROUTINE_CONTEXT, coroutineContext)

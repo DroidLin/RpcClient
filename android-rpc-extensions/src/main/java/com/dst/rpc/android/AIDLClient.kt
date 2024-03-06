@@ -15,11 +15,8 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
     private val rootExceptionHandler: ExceptionHandler = initConfig.rootExceptionHandler
     private val connectTimeout: Long = initConfig.connectTimeout
     private val strategy: EstablishStrategy = initConfig.strategy
-    private val coroutineContext: CoroutineContext = initConfig.coroutineContext
     private val remoteAndroidServiceClass: Class<out Service>? = initConfig.remoteAndroidServiceClass
     private val androidContext: Context = initConfig.androidContext
-
-    private val coroutineScope = CoroutineScope(this.coroutineContext)
 
     override fun openConnection(
         sourceAddress: RPCAddress,
