@@ -26,8 +26,9 @@ internal const val TYPE_CHAR_ARRAY = 15
 internal const val TYPE_SHORT_ARRAY = 16
 
 internal const val TYPE_LIST = 17
+internal const val TYPE_ARRAY = 18
 
 internal val Int.isArrayOrListType: Boolean
     get() = this == TYPE_BYTE_ARRAY || this == TYPE_INT_ARRAY || this == TYPE_LONG_ARRAY ||
             this == TYPE_DOUBLE_ARRAY || this == TYPE_FLOAT_ARRAY || this == TYPE_CHAR_ARRAY ||
-            this == TYPE_SHORT_ARRAY || this == TYPE_LIST
+            this == TYPE_SHORT_ARRAY || this == TYPE_LIST || this == TYPE_ARRAY

@@ -21,6 +21,11 @@ internal class SocketClient(initConfig: InitConfig) : Client {
         remoteAddress: RPCAddress,
         exceptionHandler: ExceptionHandler
     ): Connection {
-        TODO("Not yet implemented")
+        val rpCorrelator = RPCorrelator(sourceAddress, remoteAddress, this.connectionTimeout)
+        val rawConnection = SocketConnection(rpCorrelator)
+        return ExceptionHandleConnection(
+            exceptionHandler = exceptionHandler + this.rootExceptionHandler,
+            rawConnectionProvider = { rawConnection }
+        )
     }
 }

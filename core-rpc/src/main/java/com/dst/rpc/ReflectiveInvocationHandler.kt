@@ -22,7 +22,7 @@ internal class ReflectiveInvocationHandler(
         return if (isSuspendFunction) {
             val continuation = requireNotNull(p2?.find { it is Continuation<*> } as Continuation<Any?>)
             (this.connection::call as Function6<Class<*>, String, List<Class<*>>, List<Any?>, Boolean, Continuation<Any?>, Any?>)
-                .invoke(functionOwner, functionName, functionParameterTypes, functionParameterValues, isSuspendFunction, continuation)
-        } else runBlocking { this@ReflectiveInvocationHandler.connection.call(functionOwner, functionName, functionParameterTypes, functionParameterValues, isSuspendFunction) }
+                .invoke(functionOwner, functionName, functionParameterTypes, functionParameterValues, true, continuation)
+        } else runBlocking { this@ReflectiveInvocationHandler.connection.call(functionOwner, functionName, functionParameterTypes, functionParameterValues, false) }
     }
 }

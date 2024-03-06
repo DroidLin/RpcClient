@@ -1,12 +1,13 @@
 package com.dst.rpc.socket.serializer
 
+import java.io.Closeable
 import java.io.Serializable
 
 /**
  * @author liuzhongao
  * @since 2024/3/6 15:48
  */
-interface SerializeWriter {
+interface SerializeWriter : Closeable {
     fun writeValue(value: Any?)
     fun writeByte(value: Byte)
     fun writeInt(value: Int)
@@ -32,8 +33,10 @@ interface SerializeWriter {
     fun writeFloatArray(value: FloatArray?, start: Int, end: Int)
     fun writeShortArray(value: ShortArray?)
     fun writeShortArray(value: ShortArray?, start: Int, end: Int)
-    fun writeList(value: List<Any?>?)
-    fun writeList(value: List<Any?>?, start: Int, end: Int)
+    fun <T> writeArray(value: Array<T>?)
+    fun <T> writeArray(value: Array<T>?, start: Int, end: Int)
+    fun <T> writeList(value: List<T>?)
+    fun <T> writeList(value: List<T>?, start: Int, end: Int)
 
     fun toByteArray(): ByteArray
 }

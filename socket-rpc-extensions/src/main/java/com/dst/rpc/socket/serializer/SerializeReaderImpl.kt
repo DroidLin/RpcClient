@@ -1,6 +1,7 @@
 package com.dst.rpc.socket.serializer
 
 import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.io.ObjectInputStream
 import java.io.Serializable
 
@@ -10,65 +11,72 @@ import java.io.Serializable
  */
 fun SerializeReader(byteArray: ByteArray): SerializeReader = SerializeReaderImpl(byteArray)
 
-internal class SerializeReaderImpl(byteArray: ByteArray) : SerializeReader {
+fun SerializeReader(inputStream: InputStream): SerializeReader = SerializeReaderImpl(inputStream)
 
-    private val _objectInputStream = ObjectInputStream(ByteArrayInputStream(byteArray))
+private class SerializeReaderImpl : SerializeReader {
 
-    override fun readValue(): Any? {
+    private val _objectInputStream: ObjectInputStream
+
+    constructor(byteArray: ByteArray) {
+        this._objectInputStream = ObjectInputStream(ByteArrayInputStream(byteArray))
+    }
+
+    constructor(inputStream: InputStream) {
+        this._objectInputStream = ObjectInputStream(inputStream)
+    }
+
+    override fun <T> readValue(): T? {
         val valueType = this._objectInputStream.readInt()
         if (valueType.isArrayOrListType) {
             val arrayOrListCount = this._objectInputStream.readInt()
             return when (valueType) {
-                TYPE_BYTE_ARRAY -> {
-                    val byteArray = ByteArray(arrayOrListCount)
+                TYPE_BYTE_ARRAY -> ByteArray(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        byteArray[index] = this._objectInputStream.readByte()
+                        array[index] = this._objectInputStream.readByte()
                     }
                 }
-                TYPE_INT_ARRAY -> {
-                    val intArray = IntArray(arrayOrListCount)
+                TYPE_INT_ARRAY -> IntArray(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        intArray[index] = this._objectInputStream.readInt()
+                        array[index] = this._objectInputStream.readInt()
                     }
                 }
-                TYPE_LONG_ARRAY -> {
-                    val longArray = LongArray(arrayOrListCount)
+                TYPE_LONG_ARRAY -> LongArray(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        longArray[index] = this._objectInputStream.readLong()
+                        array[index] = this._objectInputStream.readLong()
                     }
                 }
-                TYPE_DOUBLE_ARRAY -> {
-                    val doubleArray = DoubleArray(arrayOrListCount)
+                TYPE_DOUBLE_ARRAY -> DoubleArray(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        doubleArray[index] = this._objectInputStream.readDouble()
+                        array[index] = this._objectInputStream.readDouble()
                     }
                 }
-                TYPE_FLOAT_ARRAY -> {
-                    val floatArray = FloatArray(arrayOrListCount)
+                TYPE_FLOAT_ARRAY -> FloatArray(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        floatArray[index] = this._objectInputStream.readFloat()
+                        array[index] = this._objectInputStream.readFloat()
                     }
                 }
-                TYPE_CHAR_ARRAY -> {
-                    val charArray = CharArray(arrayOrListCount)
+                TYPE_CHAR_ARRAY -> CharArray(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        charArray[index] = this._objectInputStream.readChar()
+                        array[index] = this._objectInputStream.readChar()
                     }
                 }
-                TYPE_SHORT_ARRAY -> {
-                    val shortArray = ShortArray(arrayOrListCount)
+                TYPE_SHORT_ARRAY -> ShortArray(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        shortArray[index] = this._objectInputStream.readShort()
+                        array[index] = this._objectInputStream.readShort()
                     }
                 }
-                TYPE_LIST -> {
-                    val list = ArrayList<Any?>()
+                TYPE_LIST -> ArrayList<Any?>(arrayOrListCount).also { array ->
                     for (index in 0 until arrayOrListCount) {
-                        list += this.readValue()
+                        array += this.readValue()
+                    }
+                }
+                TYPE_ARRAY -> arrayOfNulls<Any?>(arrayOrListCount).also { array ->
+                    for (index in 0 until arrayOrListCount) {
+                        array[index] = this.readValue()
                     }
                 }
                 else -> throw UnsupportedValueTypeException("unsupported value type: $valueType")
-            }
+            } as? T
         }
         return when (valueType) {
             TYPE_NULL -> null
@@ -83,78 +91,27 @@ internal class SerializeReaderImpl(byteArray: ByteArray) : SerializeReader {
             TYPE_STRING -> this._objectInputStream.readUTF()
             TYPE_SERIALIZABLE -> this._objectInputStream.readObject()
             else -> throw UnsupportedValueTypeException("unsupported value type: $valueType")
-        }
+        } as? T
     }
 
-    override fun readByte(): Byte {
-        return this.readValue() as Byte
-    }
-
-    override fun readInt(): Int {
-        return this.readValue() as Int
-    }
-
-    override fun readLong(): Long {
-        return this.readValue() as Long
-    }
-
-    override fun readDouble(): Double {
-        return this.readValue() as Double
-    }
-
-    override fun readChar(): Char {
-        return this.readValue() as Char
-    }
-
-    override fun readFloat(): Float {
-        return this.readValue() as Float
-    }
-
-    override fun readShort(): Short {
-        return this.readValue() as Short
-    }
-
-    override fun readBoolean(): Boolean {
-        return this.readValue() as Boolean
-    }
-
-    override fun readString(): String? {
-        return this.readValue() as? String
-    }
-
-    override fun readSerializable(): Serializable? {
-        return this.readValue() as? Serializable
-    }
-
-    override fun readByteArray(): ByteArray? {
-        return this.readValue() as? ByteArray
-    }
-
-    override fun readIntArray(): IntArray? {
-        return this.readValue() as? IntArray
-    }
-
-    override fun readLongArray(): LongArray? {
-        return this.readValue() as? LongArray
-    }
-
-    override fun readDoubleArray(): DoubleArray? {
-        return this.readValue() as? DoubleArray
-    }
-
-    override fun readCharArray(): CharArray? {
-        return this.readValue() as? CharArray
-    }
-
-    override fun readFloatArray(): FloatArray? {
-        return this.readValue() as? FloatArray
-    }
-
-    override fun readShortArray(): ShortArray? {
-        return this.readValue() as? ShortArray
-    }
-
-    override fun readList(): List<Any?>? {
-        return this.readValue() as? List<Any?>
-    }
+    override fun readByte(): Byte = this.readValue() ?: 0
+    override fun readInt(): Int = this.readValue() ?: 0
+    override fun readLong(): Long = this.readValue() ?: 0
+    override fun readDouble(): Double = this.readValue() ?: 0.0
+    override fun readChar(): Char = this.readValue() ?: Char.MIN_VALUE
+    override fun readFloat(): Float = this.readValue() ?: 0f
+    override fun readShort(): Short = this.readValue() ?: 0
+    override fun readBoolean(): Boolean = this.readValue() ?: false
+    override fun readString(): String? = this.readValue()
+    override fun readSerializable(): Serializable? = this.readValue() as? Serializable
+    override fun readByteArray(): ByteArray? = this.readValue() as? ByteArray
+    override fun readIntArray(): IntArray? = this.readValue() as? IntArray
+    override fun readLongArray(): LongArray? = this.readValue() as? LongArray
+    override fun readDoubleArray(): DoubleArray? = this.readValue() as? DoubleArray
+    override fun readCharArray(): CharArray? = this.readValue() as? CharArray
+    override fun readFloatArray(): FloatArray? = this.readValue() as? FloatArray
+    override fun readShortArray(): ShortArray? = this.readValue() as? ShortArray
+    override fun <T> readArray(): Array<T>? = this.readValue()
+    override fun <T> readList(): List<T>? = this.readValue()
+    override fun close(): Unit = this._objectInputStream.close()
 }

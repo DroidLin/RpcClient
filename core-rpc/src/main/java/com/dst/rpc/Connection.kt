@@ -10,6 +10,10 @@ interface Connection {
 
     val isClosed: Boolean
 
+    /**
+     * real call to remote, should aware that [functionParameterTypes] will not contain
+     * [kotlin.coroutines.Continuation] class type and so does [functionParameterValues] .
+     */
     suspend fun call(
         functionOwner: Class<*>,
         functionName: String,

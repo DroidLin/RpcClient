@@ -11,10 +11,7 @@ internal class SocketConnection(
     private val rpCorrelator: RPCorrelator,
 ) : Connection {
 
-    private var _socket: Socket? = null
-
-    override val isClosed: Boolean
-        get() = this._socket == null || requireNotNull(this._socket).isClosed
+    override val isClosed: Boolean get() = !this.rpCorrelator.isOpen
 
     override suspend fun call(
         functionOwner: Class<*>,
@@ -23,6 +20,18 @@ internal class SocketConnection(
         functionParameterValues: List<Any?>,
         isSuspended: Boolean
     ): Any? {
-        TODO("")
+        return if (isSuspended) {
+            this.rpCorrelator.callSuspendFunction(
+                functionOwner = functionOwner,
+                functionName = functionName,
+                argumentTypes = functionParameterTypes,
+                argumentValue = functionParameterValues
+            )
+        } else this.rpCorrelator.callFunction(
+            functionOwner = functionOwner,
+            functionName = functionName,
+            argumentTypes = functionParameterTypes,
+            argumentValue = functionParameterValues
+        )
     }
 }

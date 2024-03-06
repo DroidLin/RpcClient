@@ -1,14 +1,15 @@
 package com.dst.rpc.socket.serializer
 
+import java.io.Closeable
 import java.io.Serializable
 
 /**
  * @author liuzhongao
  * @since 2024/3/6 15:49
  */
-interface SerializeReader {
+interface SerializeReader : Closeable {
 
-    fun readValue(): Any?
+    fun <T> readValue(): T?
     fun readByte(): Byte
     fun readInt(): Int
     fun readLong(): Long
@@ -26,5 +27,6 @@ interface SerializeReader {
     fun readCharArray(): CharArray?
     fun readFloatArray(): FloatArray?
     fun readShortArray(): ShortArray?
-    fun readList(): List<Any?>?
+    fun <T> readArray(): Array<T>?
+    fun <T> readList(): List<T>?
 }

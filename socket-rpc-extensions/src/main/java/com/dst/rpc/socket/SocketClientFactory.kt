@@ -9,15 +9,18 @@ import com.dst.rpc.RPCAddress
  * @since 2024/3/5 21:59
  */
 class SocketClientFactory : Client.Factory {
+
     override fun acceptAddress(address: RPCAddress): Boolean {
-        TODO("Not yet implemented")
+        return address.scheme == "socket"
     }
 
     override fun addressCreate(value: String): RPCAddress? {
-        TODO("Not yet implemented")
+        return if (value.startsWith("socket://")) {
+            SocketRPCAddress(value = value)
+        } else null
     }
 
     override fun newServer(initConfig: InitConfig): Client {
-        TODO("Not yet implemented")
+        return SocketClient(initConfig = initConfig)
     }
 }

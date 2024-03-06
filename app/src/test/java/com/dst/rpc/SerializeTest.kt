@@ -1,5 +1,8 @@
 package com.dst.rpc
 
+import com.dst.rpc.socket.serializer.SerializeReader
+import com.dst.rpc.socket.serializer.SerializeWriter
+import org.junit.Assert
 import org.junit.Test
 
 /**
@@ -10,6 +13,48 @@ class SerializeTest {
 
     @Test
     fun intSerializeTest() {
-//        val serializeWriter =
+        val serializeWriter = SerializeWriter()
+        serializeWriter.writeInt(10)
+
+        val serializeReader = SerializeReader(serializeWriter.toByteArray())
+        val number = serializeReader.readInt()
+        Assert.assertEquals(number, 10)
     }
+
+    @Test
+    fun intArraySerializeTest() {
+        val array = intArrayOf(-121, 2, 3, 4, 5)
+        val serializeWriter = SerializeWriter()
+        serializeWriter.writeIntArray(array)
+
+        val serializeReader = SerializeReader(serializeWriter.toByteArray())
+        val tempArray = serializeReader.readIntArray()
+        Assert.assertArrayEquals(array, tempArray)
+    }
+
+    @Test
+    fun listSerializeTest() {
+        val list = listOf(1, 2, 2.2, 4, null, 5)
+        val serializeWriter = SerializeWriter()
+        serializeWriter.writeList(list)
+
+        val serializeReader = SerializeReader(serializeWriter.toByteArray())
+        val tempList = serializeReader.readList<Any?>()
+        Assert.assertEquals(list.size, tempList?.size)
+        for (index in list.indices) {
+            Assert.assertEquals(list[index], tempList?.get(index))
+        }
+    }
+
+    @Test
+    fun charArraySerializeTest() {
+        val array = charArrayOf('a', 'b', 'c', 'd', 'e', 'f', 'g')
+        val serializeWriter = SerializeWriter()
+        serializeWriter.writeCharArray(array)
+
+        val serializeReader = SerializeReader(serializeWriter.toByteArray())
+        val tempArray = serializeReader.readCharArray()
+        Assert.assertArrayEquals(array, tempArray)
+    }
+
 }

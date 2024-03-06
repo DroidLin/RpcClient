@@ -1,10 +1,18 @@
 package com.dst.rpc.socket
 
 import com.dst.rpc.RPCAddress
+import com.dst.rpc.socket.serializer.SerializeReader
+import com.dst.rpc.socket.serializer.SerializeWriter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.Socket
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * @author liuzhongao
@@ -40,8 +48,7 @@ private class RPCorrelatorImpl(
 
     private var _socket: Socket? = null
 
-    override val isOpen: Boolean
-        get() = TODO("Not yet implemented")
+    override val isOpen: Boolean get() = this._socket.let { socket -> socket != null && !socket.isClosed }
 
     override fun callFunction(
         functionOwner: Class<*>,
@@ -50,7 +57,24 @@ private class RPCorrelatorImpl(
         argumentValue: List<Any?>
     ): Any? {
         val socket = this.connect()
-        return super.callFunction(functionOwner, functionName, argumentTypes, argumentValue)
+        val serializeWriter = SerializeWriter()
+        serializeWriter.writeString(functionOwner.name)
+        serializeWriter.writeString(functionName)
+        serializeWriter.writeList(argumentTypes.map { it.name })
+        serializeWriter.writeList(argumentValue)
+
+        socket.getOutputStream().write(serializeWriter.toByteArray())
+        socket.getOutputStream().flush()
+        socket.getOutputStream().close()
+
+        val serializeReader = SerializeReader(socket.getInputStream())
+        val data = serializeReader.readValue<Any?>()
+        val throwable = serializeReader.readValue<Throwable?>()
+        if (throwable != null) {
+            throw throwable
+        }
+
+        return data
     }
 
     override suspend fun callSuspendFunction(
@@ -58,11 +82,40 @@ private class RPCorrelatorImpl(
         functionName: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
-    ): Any? {
-        val socket = withContext(Dispatchers.IO) {
+    ): Any? = coroutineScope {
+        val socketDeferred = async {
             this@RPCorrelatorImpl.connect()
         }
-        return super.callSuspendFunction(functionOwner, functionName, argumentTypes, argumentValue)
+        val byteArrayDeferred = async {
+            val serializeWriter = SerializeWriter()
+            serializeWriter.writeString(functionOwner.name)
+            serializeWriter.writeString(functionName)
+            serializeWriter.writeList(argumentTypes.map { it.name })
+            serializeWriter.writeList(argumentValue)
+            serializeWriter.writeSerializable(this@RPCorrelatorImpl.sourceAddress)
+            serializeWriter.close()
+            serializeWriter.toByteArray()
+        }
+        val socket = socketDeferred.await()
+        val byteArray = byteArrayDeferred.await()
+        suspendCoroutineUninterceptedOrReturn { continuation ->
+            val callback = SocketRPCallback { data, throwable ->
+                if (throwable != null) {
+                    continuation.resumeWithException(throwable)
+                } else continuation.resume(data)
+            }
+            socket.getOutputStream().write(byteArray)
+            socket.getOutputStream().flush()
+            socket.getOutputStream().close()
+
+            val serializeReader = SerializeReader(socket.getInputStream())
+            val data = serializeReader.readValue<Any?>()
+            val throwable = serializeReader.readValue<Throwable?>()
+            if (throwable != null) {
+                throw throwable
+            }
+            data
+        }
     }
 
     private fun connect(): Socket {
