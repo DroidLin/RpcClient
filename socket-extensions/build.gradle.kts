@@ -9,6 +9,6 @@ java {
 }
 
 dependencies {
-    implementation(project(":core-rpc"))
+    implementation(project(":core"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.2")
 }

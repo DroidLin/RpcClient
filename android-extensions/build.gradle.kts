@@ -26,7 +26,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         aidl = true
@@ -34,6 +34,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core-rpc"))
+    implementation(project(":core"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.2")
 }

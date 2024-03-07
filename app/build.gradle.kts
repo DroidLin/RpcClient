@@ -40,6 +40,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-    testImplementation(project(":core-rpc"))
-    testImplementation(project(":socket-rpc-extensions"))
+    testImplementation(project(":core"))
+    testImplementation(project(":socket-extensions"))
 }

@@ -15,8 +15,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "DstRpcClient"
 include(":app")
-include(":core-rpc")
-include(":android-rpc-extensions")
-include(":core-rpc-annotation")
+include(":core")
+include(":android-extensions")
+include(":core-annotation")
 include("socket-rpc-extensions")
-include(":socket-rpc-extensions")
+include(":socket-extensions")

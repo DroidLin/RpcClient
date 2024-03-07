@@ -19,6 +19,8 @@ class AIDLClientFactory : Client.Factory {
         } else null
     }
 
+    override fun init(initConfig: InitConfig) {}
+
     override fun newClient(initConfig: InitConfig): Client {
         return AIDLClient(initConfig = initConfig)
     }
