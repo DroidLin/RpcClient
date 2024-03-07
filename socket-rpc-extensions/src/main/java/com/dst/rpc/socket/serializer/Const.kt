@@ -32,3 +32,7 @@ internal val Int.isArrayOrListType: Boolean
     get() = this == TYPE_BYTE_ARRAY || this == TYPE_INT_ARRAY || this == TYPE_LONG_ARRAY ||
             this == TYPE_DOUBLE_ARRAY || this == TYPE_FLOAT_ARRAY || this == TYPE_CHAR_ARRAY ||
             this == TYPE_SHORT_ARRAY || this == TYPE_LIST || this == TYPE_ARRAY
+
+internal const val KEY_FUNCTION_TYPE_SUSPEND = "type_suspend_function_call"
+internal const val KEY_FUNCTION_TYPE_NON_SUSPEND = "type_non_suspend_function_call"
+internal const val KEY_FUNCTION_SUSPEND_CALLBACK = "type_suspend_callback_call"

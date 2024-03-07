@@ -20,7 +20,11 @@ class SocketClientFactory : Client.Factory {
         } else null
     }
 
-    override fun newServer(initConfig: InitConfig): Client {
+    override fun init(initConfig: InitConfig) {
+        SocketFunctionReceiver(initConfig = initConfig).listenToRemoteCall()
+    }
+
+    override fun newClient(initConfig: InitConfig): Client {
         return SocketClient(initConfig = initConfig)
     }
 }

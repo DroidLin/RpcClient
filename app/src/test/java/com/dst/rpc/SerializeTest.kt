@@ -57,4 +57,15 @@ class SerializeTest {
         Assert.assertArrayEquals(array, tempArray)
     }
 
+    @Test
+    fun stringSerializeTest() {
+        val source = "liuzhongao"
+        val serializeWriter = SerializeWriter()
+        serializeWriter.writeString(source)
+
+        val serializeReader = SerializeReader(serializeWriter.toByteArray())
+        val tempArray = serializeReader.readString()
+        Assert.assertEquals(source, tempArray)
+    }
+
 }

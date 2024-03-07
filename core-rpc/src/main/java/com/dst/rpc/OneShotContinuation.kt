@@ -1,10 +1,10 @@
-package com.dst.rpc.android
+package com.dst.rpc
 
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-internal class OneShotContinuation<T>(
+class OneShotContinuation<T>(
     private val continuation: Continuation<T>,
     private val coroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : Continuation<T> {

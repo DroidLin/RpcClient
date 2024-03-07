@@ -1,6 +1,7 @@
 package com.dst.rpc.android
 
 import android.os.IBinder
+import com.dst.rpc.OneShotContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext

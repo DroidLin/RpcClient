@@ -7,6 +7,10 @@ package com.dst.rpc
 fun interface ExceptionHandler {
 
     fun handle(throwable: Throwable?): Boolean
+
+    companion object : ExceptionHandler {
+        override fun handle(throwable: Throwable?): Boolean = false
+    }
 }
 
 operator fun ExceptionHandler.plus(handler: ExceptionHandler): ExceptionHandler =

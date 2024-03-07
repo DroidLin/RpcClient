@@ -21,8 +21,9 @@ internal class ReflectiveInvocationHandler(
         val isSuspendFunction = functionParameterTypes.lastOrNull() == Continuation::class.java
         return if (isSuspendFunction) {
             val continuation = requireNotNull(p2?.find { it is Continuation<*> } as Continuation<Any?>)
+            val functionParameterTypesWithoutContinuation = functionParameterTypes.filter { it.javaClass != Continuation::class.java }
             (this.connection::call as Function6<Class<*>, String, List<Class<*>>, List<Any?>, Boolean, Continuation<Any?>, Any?>)
-                .invoke(functionOwner, functionName, functionParameterTypes, functionParameterValues, true, continuation)
+                .invoke(functionOwner, functionName, functionParameterTypesWithoutContinuation, functionParameterValues, true, continuation)
         } else runBlocking { this@ReflectiveInvocationHandler.connection.call(functionOwner, functionName, functionParameterTypes, functionParameterValues, false) }
     }
 }

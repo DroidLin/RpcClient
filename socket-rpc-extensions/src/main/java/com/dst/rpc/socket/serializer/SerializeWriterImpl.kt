@@ -122,7 +122,7 @@ private class SerializeWriterImpl : SerializeWriter {
 
     override fun writeString(value: String?) {
         this._objectOutputStream.writeInt(TYPE_STRING)
-        this._objectOutputStream.writeChars(value ?: "")
+        this._objectOutputStream.writeUTF(value ?: "")
         this._objectOutputStream.flush()
     }
 

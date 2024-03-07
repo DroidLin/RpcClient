@@ -36,7 +36,7 @@ class InitConfig private constructor(
                 "connectTimeout should not be less than 5s."
             }
             return InitConfig(
-                rootExceptionHandler = requireNotNull(this.exceptionHandler),
+                rootExceptionHandler = this.exceptionHandler ?: ExceptionHandler,
                 connectTimeout = this.connectTimeout,
                 extraParameters = this.extraParameter
             )

@@ -1,13 +1,6 @@
-package com.dst.rpc.android
+package com.dst.rpc.socket
 
-import android.os.Looper
 import java.lang.reflect.Method
-
-val isMainThread: Boolean get() = Looper.getMainLooper() == Looper.myLooper()
-
-fun assertWorkerThread() { require(!isMainThread) }
-
-fun assertMainThread() { require(isMainThread) }
 
 
 internal val Array<String>.stringTypeConvert: Array<Class<*>>

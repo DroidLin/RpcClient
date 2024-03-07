@@ -32,6 +32,8 @@ interface Client {
 
         fun addressCreate(value: String): RPCAddress?
 
-        fun newServer(initConfig: InitConfig): Client
+        fun init(initConfig: InitConfig)
+
+        fun newClient(initConfig: InitConfig): Client
     }
 }

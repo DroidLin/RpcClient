@@ -19,6 +19,8 @@ object ClientManager {
     @JvmStatic
     fun init(initConfig: InitConfig) {
         this.initConfig = initConfig
+        this.collectClientFactories()
+        this.initSubModule(initConfig)
     }
 
     fun addressCreate(value: String): RPCAddress {
@@ -57,7 +59,8 @@ object ClientManager {
      * [exceptionHandler] will handle all exceptions happens through [Connection.call] function.
      * when an exception is not handled by [exceptionHandler], it will be throws at the call point.
      */
-    fun <T : INoProguard> serviceCreate(clazz: Class<*>, sourceAddress: RPCAddress, remoteAddress: RPCAddress, exceptionHandler: ExceptionHandler): T {
+    @JvmOverloads
+    fun <T : INoProguard> serviceCreate(clazz: Class<*>, sourceAddress: RPCAddress, remoteAddress: RPCAddress, exceptionHandler: ExceptionHandler = ExceptionHandler): T {
         val connection = this.openConnection(sourceAddress, remoteAddress, exceptionHandler)
         return Proxy.newProxyInstance(clazz.classLoader, arrayOf(clazz), ReflectiveInvocationHandler(connection)) as T
     }
@@ -89,7 +92,7 @@ object ClientManager {
                 if (this.remoteClientImplMap[remoteAddress.value] == null) {
                     val factory = synchronized(this) { this.remoteClientFactoryMap.find { it.acceptAddress(address = remoteAddress) } }
                     if (factory != null) {
-                        val newGeneratedServerInstance = factory.newServer(initConfig = this.initConfig)
+                        val newGeneratedServerInstance = factory.newClient(initConfig = this.initConfig)
                         this.remoteClientImplMap[remoteAddress.value] = newGeneratedServerInstance
                     }
                 }
@@ -97,6 +100,14 @@ object ClientManager {
         }
         return requireNotNull(this.remoteClientImplMap[remoteAddress.value]) {
             "no factory accept address : $remoteAddress"
+        }
+    }
+
+    private fun initSubModule(initConfig: InitConfig) {
+        synchronized(this) {
+            for (factory in this.remoteClientFactoryMap) {
+                factory.init(initConfig)
+            }
         }
     }
 }
