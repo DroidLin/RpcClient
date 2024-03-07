@@ -9,7 +9,5 @@ java {
 }
 
 dependencies {
-    testImplementation("junit:junit:4.13.2")
-    implementation(project(":core"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.2")
+    implementation(project(":core-annotation"))
 }

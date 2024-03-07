@@ -23,6 +23,7 @@ object ClientManager {
         this.initSubModule(initConfig)
     }
 
+    @JvmStatic
     fun addressCreate(value: String): RPCAddress {
         this.collectClientFactories()
         return this.remoteClientFactoryMap.firstNotNullOfOrNull {
@@ -30,13 +31,9 @@ object ClientManager {
         } ?: RPCAddress(value = value)
     }
 
-    fun openConnection(sourceAddress: RPCAddress, remoteAddress: RPCAddress): Connection {
-        this.collectClientFactories()
-        return this.acquireClient(remoteAddress = remoteAddress)
-            .openConnection(sourceAddress, remoteAddress)
-    }
-
-    fun openConnection(sourceAddress: RPCAddress, remoteAddress: RPCAddress, exceptionHandler: ExceptionHandler): Connection {
+    @JvmStatic
+    @JvmOverloads
+    fun openConnection(sourceAddress: RPCAddress, remoteAddress: RPCAddress, exceptionHandler: ExceptionHandler = ExceptionHandler): Connection {
         this.collectClientFactories()
         return this.acquireClient(remoteAddress = remoteAddress)
             .openConnection(sourceAddress, remoteAddress, exceptionHandler)

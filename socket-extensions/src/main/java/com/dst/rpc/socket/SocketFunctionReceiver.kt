@@ -82,24 +82,9 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                 val socketAddress = requireNotNull(serializeReader.readSerializable() as? RPCAddress)
                 val token = serializeReader.readLong()
 
+                val socketRPCallback = SocketRPCallback(socketAddress, token)
                 val continuation = Continuation<Any?>(EmptyCoroutineContext) { result ->
-                    kotlin.runCatching {
-                        val tempSocket = Socket().also { socket ->
-                            val callbackAddress = InetSocketAddress(socketAddress.domain, socketAddress.port)
-                            socket.connect(callbackAddress)
-                        }
-                        val byteArray = SerializeWriter().also { serializeWriter ->
-                            serializeWriter.writeString(KEY_FUNCTION_SUSPEND_CALLBACK)
-                            serializeWriter.writeLong(token)
-                            serializeWriter.writeValue(result.getOrNull())
-                            serializeWriter.writeValue(result.exceptionOrNull())
-                            serializeWriter.close()
-                        }.toByteArray()
-                        tempSocket.getOutputStream().write(byteArray)
-                        tempSocket.getOutputStream().flush()
-                        tempSocket.getOutputStream().close()
-                        tempSocket.shutdownOutput()
-                    }
+                    kotlin.runCatching { socketRPCallback.callback(result.getOrNull(), result.exceptionOrNull()) }
                 }
                 val oneShotContinuation = OneShotContinuation(continuation)
 

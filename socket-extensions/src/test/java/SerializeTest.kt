@@ -1,5 +1,3 @@
-package com.dst.rpc
-
 import com.dst.rpc.socket.serializer.SerializeReader
 import com.dst.rpc.socket.serializer.SerializeWriter
 import org.junit.Assert
@@ -34,7 +32,7 @@ class SerializeTest {
 
     @Test
     fun listSerializeTest() {
-        val list = listOf(1, 2, 2.2, 4, null, 5)
+        val list: List<Any?> = listOf(1, 2, 2.2, 4, null, 5)
         val serializeWriter = SerializeWriter()
         serializeWriter.writeList(list)
 
