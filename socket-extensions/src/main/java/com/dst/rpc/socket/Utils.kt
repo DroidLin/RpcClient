@@ -36,9 +36,3 @@ internal fun Any?.safeUnbox(): Any? {
     }
     return this
 }
-
-internal suspend fun Method.invokeSuspend(instance: Any, vararg args: Any?): Any? {
-    return kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn { continuation ->
-        this.invoke(instance, *args, continuation)
-    }
-}

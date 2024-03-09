@@ -6,6 +6,7 @@ import android.os.Parcelable
 internal data class AndroidInvocationRequest(
     val className: String,
     val functionName: String,
+    val functionUniqueKey: String,
     val classTypesOfFunctionParameter: List<String>,
     val valuesOfFunctionParameter: List<Any?>,
 ) : Request, Parcelable {
@@ -13,6 +14,7 @@ internal data class AndroidInvocationRequest(
     constructor(parcel: Parcel) : this(
         className = requireNotNull(parcel.readString()),
         functionName = requireNotNull(parcel.readString()),
+        functionUniqueKey = requireNotNull(parcel.readString()),
         classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
         valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
     )
@@ -20,6 +22,7 @@ internal data class AndroidInvocationRequest(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(this.className)
         parcel.writeString(this.functionName)
+        parcel.writeString(this.functionUniqueKey)
         parcel.writeList(this.classTypesOfFunctionParameter)
         parcel.writeList(this.valuesOfFunctionParameter)
     }
@@ -47,6 +50,7 @@ internal data class AndroidInvocationRequest(
 data class AndroidSuspendInvocationRequest internal constructor(
     val className: String,
     val functionName: String,
+    val functionUniqueKey: String,
     val classTypesOfFunctionParameter: List<String>,
     val valuesOfFunctionParameter: List<Any?>,
     internal val rpCallback: RPCallback,
@@ -55,6 +59,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
     constructor(parcel: Parcel) : this(
         className = requireNotNull(parcel.readString()),
         functionName = requireNotNull(parcel.readString()),
+        functionUniqueKey = requireNotNull(parcel.readString()),
         classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
         valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
         rpCallback = RPCallback(RPCInterface(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
@@ -63,6 +68,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(this.className)
         parcel.writeString(this.functionName)
+        parcel.writeString(this.functionUniqueKey)
         parcel.writeList(this.classTypesOfFunctionParameter)
         parcel.writeList(this.valuesOfFunctionParameter)
         parcel.writeStrongBinder(this.rpCallback.iBinder)
@@ -119,7 +125,7 @@ internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? 
 }
 
 internal data class AttachReCorrelatorRequest(
-    val rpCorrelator: RPCorrelator
+    val rpCorrelator: AndroidRPCorrelator
 ) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(

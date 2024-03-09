@@ -1,6 +1,7 @@
 package com.dst.rpc.socket
 
 import com.dst.rpc.Connection
+import com.dst.rpc.RPCorrelator
 import java.net.Socket
 
 /**
@@ -16,6 +17,7 @@ internal class SocketConnection(
     override suspend fun call(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         functionParameterTypes: List<Class<*>>,
         functionParameterValues: List<Any?>,
         isSuspended: Boolean
@@ -24,12 +26,14 @@ internal class SocketConnection(
             this.rpCorrelator.callSuspendFunction(
                 functionOwner = functionOwner,
                 functionName = functionName,
+                functionUniqueKey = functionUniqueKey,
                 argumentTypes = functionParameterTypes,
                 argumentValue = functionParameterValues
             )
         } else this.rpCorrelator.callFunction(
             functionOwner = functionOwner,
             functionName = functionName,
+            functionUniqueKey = functionUniqueKey,
             argumentTypes = functionParameterTypes,
             argumentValue = functionParameterValues
         )

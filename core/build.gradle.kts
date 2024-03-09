@@ -9,5 +9,6 @@ java {
 }
 
 dependencies {
+//    implementation(project(":core-annotation"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.2")
 }

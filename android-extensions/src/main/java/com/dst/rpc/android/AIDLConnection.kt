@@ -15,7 +15,7 @@ import kotlin.coroutines.Continuation
  * @since 2024/3/4 11:13
  */
 internal class AIDLConnection(
-    private val rpCorrelator: RPCorrelator
+    private val rpCorrelator: AndroidRPCorrelator
 ) : Connection {
 
     override val isClosed: Boolean get() = !this.rpCorrelator.isOpen
@@ -25,6 +25,7 @@ internal class AIDLConnection(
     override suspend fun call(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         functionParameterTypes: List<Class<*>>,
         functionParameterValues: List<Any?>,
         isSuspended: Boolean
@@ -34,6 +35,7 @@ internal class AIDLConnection(
                 this.rpCorrelator.callSuspendFunction(
                     functionOwner = functionOwner,
                     functionName = functionName,
+                    functionUniqueKey = functionUniqueKey,
                     argumentTypes = functionParameterTypes.filter { it != Continuation::class.java },
                     argumentValue = functionParameterValues.filter { it !is Continuation<*> }
                 )
@@ -41,6 +43,7 @@ internal class AIDLConnection(
                 this.rpCorrelator.callFunction(
                     functionOwner = functionOwner,
                     functionName = functionName,
+                    functionUniqueKey = functionUniqueKey,
                     argumentTypes = functionParameterTypes,
                     argumentValue = functionParameterValues
                 )

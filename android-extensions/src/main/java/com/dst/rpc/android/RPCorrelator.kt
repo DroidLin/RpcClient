@@ -2,6 +2,7 @@ package com.dst.rpc.android
 
 import android.os.IBinder
 import com.dst.rpc.OneShotContinuation
+import com.dst.rpc.RPCorrelator
 import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -14,42 +15,26 @@ import kotlin.coroutines.resumeWithException
  * @author liuzhongao
  * @since 2024/3/3 16:22
  */
-internal interface RPCorrelator {
+interface AndroidRPCorrelator : RPCorrelator {
 
-    val isOpen: Boolean get() = false
-
-    fun attachCorrelator(correlator: RPCorrelator)
-
-    fun callFunction(
-        functionOwner: Class<*>,
-        functionName: String,
-        argumentTypes: List<Class<*>>,
-        argumentValue: List<Any?>
-    ): Any? = null
-
-    suspend fun callSuspendFunction(
-        functionOwner: Class<*>,
-        functionName: String,
-        argumentTypes: List<Class<*>>,
-        argumentValue: List<Any?>
-    ): Any? = null
+    fun attachCorrelator(correlator: AndroidRPCorrelator)
 }
 
-internal val RPCorrelator.iBinder: IBinder
+internal val AndroidRPCorrelator.iBinder: IBinder
     get() = when (this) {
-        is RPCorrelatorProxy -> this.rpcInterface.iBinder
-        is RPCorrelatorStub -> this.rpcInterface.iBinder
+        is AndroidRPCorrelatorProxy -> this.rpcInterface.iBinder
+        is AndroidRPCorrelatorStub -> this.rpcInterface.iBinder
         else -> throw IllegalArgumentException("unknown type of current RPCorrelator: ${this.javaClass.name}")
     }
 
-internal fun RPCorrelator(rpCorrelator: RPCorrelator): RPCorrelator = RPCorrelatorStub(rpCorrelator)
+internal fun RPCorrelator(rpCorrelator: AndroidRPCorrelator): AndroidRPCorrelator = AndroidRPCorrelatorStub(rpCorrelator)
 
-internal fun RPCorrelator(rpcInterface: RPCInterface): RPCorrelator = RPCorrelatorProxy(rpcInterface)
+internal fun RPCorrelator(rpcInterface: RPCInterface): AndroidRPCorrelator = AndroidRPCorrelatorProxy(rpcInterface)
 
-private class RPCorrelatorProxy(val rpcInterface: RPCInterface) : RPCorrelator {
+private class AndroidRPCorrelatorProxy(val rpcInterface: RPCInterface) : AndroidRPCorrelator {
     override val isOpen: Boolean get() = rpcInterface.isAlive
 
-    override fun attachCorrelator(correlator: RPCorrelator) {
+    override fun attachCorrelator(correlator: AndroidRPCorrelator) {
         val request = AttachReCorrelatorRequest(correlator)
         this.rpcInterface.invoke(request = request)
     }
@@ -57,12 +42,14 @@ private class RPCorrelatorProxy(val rpcInterface: RPCInterface) : RPCorrelator {
     override fun callFunction(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? {
         val request = AndroidInvocationRequest(
             className = functionOwner.name,
             functionName = functionName,
+            functionUniqueKey = functionUniqueKey,
             classTypesOfFunctionParameter = argumentTypes.map { it.name },
             valuesOfFunctionParameter = argumentValue
         )
@@ -81,18 +68,19 @@ private class RPCorrelatorProxy(val rpcInterface: RPCInterface) : RPCorrelator {
     override suspend fun callSuspendFunction(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? = suspendCoroutineUninterceptedOrReturn { continuation ->
         val oneShotContinuation = OneShotContinuation(continuation)
         val deathListener = object : RPCInterface.DeathListener {
             override fun onConnectionLoss() {
-                this@RPCorrelatorProxy.rpcInterface.removeDeathListener(this)
+                this@AndroidRPCorrelatorProxy.rpcInterface.removeDeathListener(this)
                 oneShotContinuation.resume(null)
             }
         }
         val rpCallback = RPCallback { data, throwable ->
-            this@RPCorrelatorProxy.rpcInterface.removeDeathListener(deathListener)
+            this@AndroidRPCorrelatorProxy.rpcInterface.removeDeathListener(deathListener)
             if (throwable != null) {
                 oneShotContinuation.resumeWithException(Throwable(throwable))
             } else oneShotContinuation.resume(data)
@@ -100,6 +88,7 @@ private class RPCorrelatorProxy(val rpcInterface: RPCInterface) : RPCorrelator {
         val request = AndroidSuspendInvocationRequest(
             className = functionOwner.name,
             functionName = functionName,
+            functionUniqueKey = functionUniqueKey,
             classTypesOfFunctionParameter = argumentTypes.map { it.name },
             valuesOfFunctionParameter = argumentValue,
             rpCallback = rpCallback
@@ -119,7 +108,7 @@ private class RPCorrelatorProxy(val rpcInterface: RPCInterface) : RPCorrelator {
     }
 }
 
-private class RPCorrelatorStub(private val rpCorrelator: RPCorrelator) : RPCorrelator by rpCorrelator {
+private class AndroidRPCorrelatorStub(private val rpCorrelator: AndroidRPCorrelator) : AndroidRPCorrelator by rpCorrelator {
 
     override val isOpen: Boolean get() = true
 
@@ -129,6 +118,7 @@ private class RPCorrelatorStub(private val rpCorrelator: RPCorrelator) : RPCorre
                 is AndroidInvocationRequest -> this.callFunction(
                     functionOwner = aidlRequest.className.stringTypeConvert,
                     functionName = aidlRequest.functionName,
+                    functionUniqueKey = aidlRequest.functionUniqueKey,
                     argumentTypes = aidlRequest.classTypesOfFunctionParameter.stringTypeConvert,
                     argumentValue = aidlRequest.valuesOfFunctionParameter,
                 )
@@ -138,8 +128,8 @@ private class RPCorrelatorStub(private val rpCorrelator: RPCorrelator) : RPCorre
                         override fun resumeWith(result: Result<Any?>) = aidlRequest.rpCallback.callback(result.getOrNull(), result.exceptionOrNull())
                     }
                     val oneShotContinuation = OneShotContinuation(continuation)
-                    (this::callSuspendFunction as Function5<Class<*>, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
-                        .invoke(aidlRequest.className.stringTypeConvert, aidlRequest.functionName, aidlRequest.classTypesOfFunctionParameter.stringTypeConvert, aidlRequest.valuesOfFunctionParameter, oneShotContinuation)
+                    (this::callSuspendFunction as Function6<Class<*>, String, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
+                        .invoke(aidlRequest.className.stringTypeConvert, aidlRequest.functionName, aidlRequest.functionUniqueKey, aidlRequest.classTypesOfFunctionParameter.stringTypeConvert, aidlRequest.valuesOfFunctionParameter, oneShotContinuation)
                 }
                 is AttachReCorrelatorRequest -> this.attachCorrelator(correlator = aidlRequest.rpCorrelator)
                 else -> null

@@ -1,5 +1,10 @@
 package com.dst.compiler
 
+import com.dst.rpc.ClientManager
+import com.dst.rpc.Connection
+import com.dst.rpc.ExceptionHandler
+import com.dst.rpc.RPCAddress
+import org.jetbrains.annotations.NotNull
 import java.io.Writer
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
@@ -17,11 +22,8 @@ internal object InterfaceProxyClassGenerator {
     @JvmStatic
     fun buildInterfaceProxyImplementationClass(
         environment: ProcessingEnvironment,
-        rootElement: Element,
+        rootElement: TypeElement,
     ) {
-        if (rootElement !is TypeElement) {
-            return
-        }
         val packageName = (rootElement.enclosingElement as? PackageElement)?.qualifiedName?.toString() ?: return
         val simpleName = rootElement.simpleName.toString()
         val newClassName = "${simpleName}_Generated_Proxy"
@@ -31,24 +33,23 @@ internal object InterfaceProxyClassGenerator {
             .appendLine()
             .appendLine("public final class $newClassName implements ${rootElement.qualifiedName} {")
             .appendLine()
-            .appendLine("\t@androidx.annotation.NonNull")
-            .appendLine("\tprivate final com.dst.rpc.Connection connection;")
+            .appendLine("\t@${NotNull::class.java.name}")
+            .appendLine("\tprivate final ${Connection::class.java.name} connection;")
             .appendLine()
             .append("\tpublic ${newClassName}(")
-            .append("@androidx.annotation.NonNull com.dst.rpc.RPCAddress sourceAddress, ")
-            .append("@androidx.annotation.NonNull com.dst.rpc.RPCAddress remoteAddress")
+            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} sourceAddress, ")
+            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} remoteAddress")
             .appendLine(") {")
-            .appendLine("\t\tthis.connection = com.dst.rpc.ClientManager.openConnection(sourceAddress, remoteAddress);")
+            .appendLine("\t\tthis.connection = ${ClientManager::class.java.name}.openConnection(sourceAddress, remoteAddress);")
             .appendLine("\t}")
             .appendLine()
             .append("\tpublic ${newClassName}(")
-            .append("@androidx.annotation.NonNull com.dst.rpc.RPCAddress sourceAddress, ")
-            .append("@androidx.annotation.NonNull com.dst.rpc.RPCAddress remoteAddress, ")
-            .append("@androidx.annotation.NonNull com.dst.rpc.ExceptionHandler exceptionHandler")
+            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} sourceAddress, ")
+            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} remoteAddress, ")
+            .append("@${NotNull::class.java.name} ${ExceptionHandler::class.java.name} exceptionHandler")
             .appendLine(") {")
-            .appendLine("\t\tthis.connection = com.dst.rpc.ClientManager.openConnection(sourceAddress, remoteAddress, exceptionHandler);")
+            .appendLine("\t\tthis.connection = ${ClientManager::class.java.name}.openConnection(sourceAddress, remoteAddress, exceptionHandler);")
             .appendLine("\t}")
-            .appendLine()
             .apply {
                 val memberFunctionList = rootElement.enclosedElements
                 if (memberFunctionList.isNotEmpty()) {
@@ -57,7 +58,7 @@ internal object InterfaceProxyClassGenerator {
                             continue
                         }
                         appendLine()
-                            .appendLine("\t@java.lang.Override")
+                            .appendLine("\t@${Override::class.java.name}")
                             .append("\tpublic final ${function.returnType} ${function.simpleName}(")
                         val methodParameter = function.parameters
                         if (methodParameter.isNotEmpty()) {
@@ -65,9 +66,7 @@ internal object InterfaceProxyClassGenerator {
                                 if (index != 0) {
                                     append(", ")
                                 }
-                                append(buildType(variableElement))
-                                    .append(" ")
-                                    .append(variableElement.simpleName.toString())
+                                append(buildType(variableElement)).append(" ").append(variableElement.simpleName.toString())
                             }
                         }
                         appendLine(") {")
@@ -86,6 +85,7 @@ internal object InterfaceProxyClassGenerator {
                                 .appendLine("\t\t\t\t\treturn ${newClassName}.this.connection.call(")
                                 .appendLine("\t\t\t\t\t\t${rootElement.qualifiedName}.class,")
                                 .appendLine("\t\t\t\t\t\t\"${function.simpleName}\",")
+                                .appendLine("\t\t\t\t\t\t\"${buildFunctionUniqueKey(function)}\",")
                                 .apply {
                                     append("\t\t\t\t\t\tkotlin.collections.CollectionsKt.listOf(")
                                     val functionParameter = function.parameters
@@ -124,6 +124,7 @@ internal object InterfaceProxyClassGenerator {
                             } else appendLine("\t\t\t${newClassName}.this.connection.call(")
                             appendLine("\t\t\t\t${rootElement.qualifiedName}.class,")
                                 .appendLine("\t\t\t\t\"${function.simpleName}\",")
+                                .appendLine("\t\t\t\t\t\t\"${buildFunctionUniqueKey(function)}\",")
                                 .apply {
                                     append("\t\t\t\tkotlin.collections.CollectionsKt.listOf(")
                                     val functionParameter = function.parametersWithoutContinuation
@@ -170,26 +171,5 @@ internal object InterfaceProxyClassGenerator {
             .appendLine("}")
         writer.flush()
         writer.close()
-    }
-
-    @JvmStatic
-    private fun buildImplementationMethod(writer: Writer, element: ExecutableElement, body: () -> Unit = {}) {
-        writer.appendLine()
-            .appendLine("\t@java.lang.Override")
-            .append("\tpublic final ${element.returnType} ${element.simpleName}(")
-        val methodParameter = element.parameters
-        if (methodParameter.isNotEmpty()) {
-            methodParameter.forEachIndexed { index, variableElement ->
-                if (index != 0) {
-                    writer.append(", ")
-                }
-                writer.append(buildType(variableElement))
-                    .append(" ")
-                    .append(variableElement.simpleName.toString())
-            }
-        }
-        writer.appendLine(") {")
-        body()
-        writer.appendLine("\t}")
     }
 }

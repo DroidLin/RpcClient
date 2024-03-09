@@ -11,6 +11,11 @@ object ClientManager {
 
     private val interfaceImplementationReference = HashMap<Class<*>, INoProguard>()
 
+    private val interfaceProxyFactories: MutableMap<Class<*>, (RPCAddress, RPCAddress, ExceptionHandler) -> INoProguard> = HashMap()
+    private val interfaceStubFactories: MutableMap<Class<*>, (INoProguard) -> StubFunction> = HashMap()
+
+    private val interfaceStubFunctionCache: MutableMap<Class<*>, StubFunction> = HashMap()
+
     private val remoteClientFactoryMap: MutableList<Client.Factory> = ArrayList()
     private val remoteClientImplMap: MutableMap<String, Client> = HashMap()
 
@@ -20,6 +25,7 @@ object ClientManager {
     fun init(initConfig: InitConfig) {
         this.initConfig = initConfig
         this.collectClientFactories()
+        this.collectCodeGenerationImpl()
         this.initSubModule(initConfig)
     }
 
@@ -46,8 +52,20 @@ object ClientManager {
         this.interfaceImplementationReference[clazz] = impl
     }
 
-    fun <T : INoProguard> getService(clazz: Class<T>): T {
-        return requireNotNull(this.interfaceImplementationReference[clazz] as? T)
+    fun getStubService(clazz: Class<*>): StubFunction {
+        val rawService = this.interfaceImplementationReference[clazz]
+            ?: throw NullPointerException("no business impl for interface class: ${clazz.name} is available.")
+
+        if (this.interfaceStubFunctionCache[clazz] == null) {
+            synchronized(this.interfaceStubFunctionCache) {
+                if (this.interfaceStubFunctionCache[clazz] == null) {
+                    val factory = this.interfaceStubFactories[clazz]
+                    val stubFunction = factory?.invoke(rawService)
+                    this.interfaceStubFunctionCache[clazz] = stubFunction ?: StubFunction(rawServiceImpl = rawService)
+                }
+            }
+        }
+        return requireNotNull(this.interfaceStubFunctionCache[clazz])
     }
 
     /**
@@ -58,6 +76,11 @@ object ClientManager {
      */
     @JvmOverloads
     fun <T : INoProguard> serviceCreate(clazz: Class<*>, sourceAddress: RPCAddress, remoteAddress: RPCAddress, exceptionHandler: ExceptionHandler = ExceptionHandler): T {
+        val factory = this.interfaceProxyFactories[clazz]
+        if (factory != null) {
+            return factory.invoke(sourceAddress, remoteAddress, exceptionHandler) as T
+        }
+
         val connection = this.openConnection(sourceAddress, remoteAddress, exceptionHandler)
         return Proxy.newProxyInstance(clazz.classLoader, arrayOf(clazz), ReflectiveInvocationHandler(connection)) as T
     }
@@ -77,6 +100,31 @@ object ClientManager {
         }
         if (this.remoteClientFactoryMap.isEmpty()) {
             throw IllegalStateException("No server implementation found.")
+        }
+    }
+
+    /**
+     * collect auto-generated impl using Java-base Component(SPI), may not the best choice to collect,
+     * but is the best platform-based way to adapt all platforms implementations.
+     */
+    private fun collectCodeGenerationImpl() {
+        val isProxyFactoriesEmpty = { this.interfaceProxyFactories.isEmpty() }
+        val isStubFactoriesEmpty = { this.interfaceStubFactories.isEmpty() }
+        if (isProxyFactoriesEmpty() || isStubFactoriesEmpty()) {
+            synchronized(this) {
+                if (isProxyFactoriesEmpty() || isStubFactoriesEmpty()) {
+                    val registry = object : RPCInterfaceRegistry {
+                        override fun <T : INoProguard> putServiceProxyLazy(clazz: Class<T>, factory: (RPCAddress, RPCAddress, ExceptionHandler) -> T) {
+                            this@ClientManager.interfaceProxyFactories[clazz] = factory
+                        }
+
+                        override fun <T : INoProguard> putServiceStubLazy(clazz: Class<T>, factory: (T) -> StubFunction) {
+                            this@ClientManager.interfaceStubFactories[clazz] = factory as (INoProguard) -> StubFunction
+                        }
+                    }
+                    ServiceLoader.load(RPCollector::class.java).forEach { it.collect(registry) }
+                }
+            }
         }
     }
 

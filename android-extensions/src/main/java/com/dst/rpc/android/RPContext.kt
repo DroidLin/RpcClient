@@ -12,7 +12,7 @@ data class RPContext internal constructor(
     val remoteServiceName: String,
     val sourceAddress: AIDLRPCAddress,
     val remoteAddress: AIDLRPCAddress,
-    internal val rpCorrelator: RPCorrelator
+    internal val rpCorrelator: AndroidRPCorrelator
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(

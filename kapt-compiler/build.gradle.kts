@@ -9,5 +9,7 @@ java {
 }
 
 dependencies {
+    implementation(project(":core"))
     implementation(project(":core-annotation"))
+    implementation("com.google.auto.service:auto-service:1.0-rc6")
 }

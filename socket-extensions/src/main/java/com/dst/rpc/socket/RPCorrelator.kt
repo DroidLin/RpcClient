@@ -4,6 +4,7 @@ import com.dst.rpc.ClientManager
 import com.dst.rpc.INoProguard
 import com.dst.rpc.OneShotContinuation
 import com.dst.rpc.RPCAddress
+import com.dst.rpc.RPCorrelator
 import com.dst.rpc.socket.serializer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -17,38 +18,15 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-/**
- * @author liuzhongao
- * @since 2024/3/5 23:39
- */
-internal interface RPCorrelator {
-
-    val isOpen: Boolean
-
-    fun callFunction(
-        functionOwner: Class<*>,
-        functionName: String,
-        argumentTypes: List<Class<*>>,
-        argumentValue: List<Any?>
-    ): Any? = null
-
-    suspend fun callSuspendFunction(
-        functionOwner: Class<*>,
-        functionName: String,
-        argumentTypes: List<Class<*>>,
-        argumentValue: List<Any?>
-    ): Any? = null
-}
-
 internal fun RPCorrelator(
     sourceAddress: RPCAddress,
     remoteAddress: RPCAddress,
     connectionTimeout: Long
-): RPCorrelator = RPCorrelatorImpl(sourceAddress, remoteAddress, connectionTimeout)
+): RPCorrelator = SocketRPCorrelatorProxy(sourceAddress, remoteAddress, connectionTimeout)
 
-internal fun RPCorrelator() : RPCorrelator = RPCorrelatorStub()
+internal fun RPCorrelator() : RPCorrelator = SocketRPCorrelatorStub()
 
-private class RPCorrelatorImpl(
+private class SocketRPCorrelatorProxy(
     private val sourceAddress: RPCAddress,
     private val remoteAddress: RPCAddress,
     private val connectionTimeout: Long
@@ -61,6 +39,7 @@ private class RPCorrelatorImpl(
     override fun callFunction(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? {
@@ -69,6 +48,7 @@ private class RPCorrelatorImpl(
             serializeWriter.writeString(KEY_FUNCTION_TYPE_NON_SUSPEND)
             serializeWriter.writeString(functionOwner.name)
             serializeWriter.writeString(functionName)
+            serializeWriter.writeString(functionUniqueKey)
             serializeWriter.writeList(argumentTypes.map { it.name })
             serializeWriter.writeList(argumentValue)
         }.toByteArray()
@@ -91,17 +71,18 @@ private class RPCorrelatorImpl(
     override suspend fun callSuspendFunction(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? = coroutineScope {
         val socket = withContext(Dispatchers.IO) {
-            this@RPCorrelatorImpl.connect()
+            this@SocketRPCorrelatorProxy.connect()
         }
         suspendCoroutineUninterceptedOrReturn { continuation ->
             var token: Long = 0L
             val oneShotContinuation = OneShotContinuation(continuation, this.coroutineContext)
             val timeoutWaitingTask = launch {
-                delay(this@RPCorrelatorImpl.connectionTimeout)
+                delay(this@SocketRPCorrelatorProxy.connectionTimeout)
                 oneShotContinuation.resumeWithException(Throwable("connection timeout for function call: ${functionOwner.name}#${functionName}"))
             }
             val callback = SocketRPCallback { asyncData, asyncThrowable ->
@@ -116,9 +97,10 @@ private class RPCorrelatorImpl(
                 serializeWriter.writeString(KEY_FUNCTION_TYPE_SUSPEND)
                 serializeWriter.writeString(functionOwner.name)
                 serializeWriter.writeString(functionName)
+                serializeWriter.writeString(functionUniqueKey)
                 serializeWriter.writeList(argumentTypes.map { it.name })
                 serializeWriter.writeList(argumentValue)
-                serializeWriter.writeSerializable(this@RPCorrelatorImpl.sourceAddress)
+                serializeWriter.writeSerializable(this@SocketRPCorrelatorProxy.sourceAddress)
                 serializeWriter.writeLong(token)
                 serializeWriter.close()
             }.toByteArray()
@@ -149,29 +131,25 @@ private class RPCorrelatorImpl(
     }
 }
 
-private class RPCorrelatorStub : RPCorrelator {
+private class SocketRPCorrelatorStub : RPCorrelator {
 
     override val isOpen: Boolean get() = true
 
     override fun callFunction(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
-    ): Any? {
-        val functionOwnerImplementation = ClientManager.getService(functionOwner as Class<INoProguard>)
-        return functionOwner.getDeclaredMethod(functionName, *argumentTypes.toTypedArray())
-            .invoke(functionOwnerImplementation, *argumentValue.toTypedArray())
-    }
+    ): Any? = ClientManager.getStubService(functionOwner as Class<INoProguard>)
+        .invokeNonSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
 
     override suspend fun callSuspendFunction(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
-    ): Any? {
-        val functionOwnerImplementation = ClientManager.getService(functionOwner as Class<INoProguard>)
-        return functionOwner.getDeclaredMethod(functionName, *argumentTypes.toTypedArray())
-            .invokeSuspend(functionOwnerImplementation, *argumentValue.toTypedArray())
-    }
+    ): Any? = ClientManager.getStubService(functionOwner as Class<INoProguard>)
+        .invokeSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
 }

@@ -17,6 +17,7 @@ class ExceptionHandleConnection(
     override suspend fun call(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         functionParameterTypes: List<Class<*>>,
         functionParameterValues: List<Any?>,
         isSuspended: Boolean
@@ -25,6 +26,7 @@ class ExceptionHandleConnection(
             this.rawConnectionProvider.invoke().call(
                 functionOwner = functionOwner,
                 functionName = functionName,
+                functionUniqueKey = functionUniqueKey,
                 functionParameterTypes = functionParameterTypes,
                 functionParameterValues = functionParameterValues,
                 isSuspended = isSuspended

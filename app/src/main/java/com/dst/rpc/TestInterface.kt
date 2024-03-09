@@ -1,13 +1,13 @@
 package com.dst.rpc
 
-import com.dst.rpc.annotation.RPCInterface
+import com.dst.rpc.annotations.RPCInterface
 
 /**
  * @author liuzhongao
  * @since 2024/3/8 00:53
  */
 @RPCInterface
-interface TestInterface {
+interface TestInterface : INoProguard {
 
     val name: String
 

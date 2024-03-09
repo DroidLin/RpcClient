@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+//    id("com.google.devtools.ksp")
     id("kotlin-kapt")
 }
 
@@ -31,6 +32,14 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    kotlin {
+//        sourceSets.main {
+//            kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}main${File.separator}kotlin")
+//        }
+//        sourceSets.test {
+//            kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}test${File.separator}kotlin")
+//        }
+    }
 }
 
 dependencies {
@@ -47,4 +56,5 @@ dependencies {
     implementation(project(":core-annotation"))
     implementation(project(":socket-extensions"))
     kapt(project(":kapt-compiler"))
+//    ksp(project(":ksp-compiler"))
 }

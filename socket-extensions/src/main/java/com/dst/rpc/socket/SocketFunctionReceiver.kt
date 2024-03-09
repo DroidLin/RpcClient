@@ -54,6 +54,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
             KEY_FUNCTION_TYPE_NON_SUSPEND -> {
                 val functionOwner = requireNotNull(serializeReader.readString()).stringTypeConvert
                 val functionName = requireNotNull(serializeReader.readString())
+                val functionUniqueKey = requireNotNull(serializeReader.readString())
                 val argumentTypes = requireNotNull(serializeReader.readList<String>()).stringTypeConvert
                 val argumentValue = requireNotNull(serializeReader.readList<Any?>())
 
@@ -61,6 +62,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                     this.rpCorrelator.callFunction(
                         functionOwner = functionOwner,
                         functionName = functionName,
+                        functionUniqueKey = functionUniqueKey,
                         argumentTypes = argumentTypes,
                         argumentValue = argumentValue,
                     )
@@ -77,6 +79,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
             KEY_FUNCTION_TYPE_SUSPEND -> {
                 val functionOwner = requireNotNull(serializeReader.readString()).stringTypeConvert
                 val functionName = requireNotNull(serializeReader.readString())
+                val functionUniqueKey = requireNotNull(serializeReader.readString())
                 val argumentType = requireNotNull(serializeReader.readList<String>()).stringTypeConvert
                 val argumentValue = requireNotNull(serializeReader.readList<Any?>())
                 val socketAddress = requireNotNull(serializeReader.readSerializable() as? RPCAddress)
@@ -89,8 +92,8 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                 val oneShotContinuation = OneShotContinuation(continuation)
 
                 val result = kotlin.runCatching {
-                    (this.rpCorrelator::callSuspendFunction as Function5<Class<*>, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
-                        .invoke(functionOwner, functionName, argumentType, argumentValue, oneShotContinuation)
+                    (this.rpCorrelator::callSuspendFunction as Function6<Class<*>, String, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
+                        .invoke(functionOwner, functionName, functionUniqueKey, argumentType, argumentValue, oneShotContinuation)
                 }
                 val byteArray = SerializeWriter().also { serializeWriter ->
                     serializeWriter.writeValue(result.getOrNull())

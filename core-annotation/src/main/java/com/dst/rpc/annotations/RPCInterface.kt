@@ -1,4 +1,4 @@
-package com.dst.rpc.annotation
+package com.dst.rpc.annotations
 
 /**
  * @author liuzhongao

@@ -17,6 +17,7 @@ interface Connection {
     suspend fun call(
         functionOwner: Class<*>,
         functionName: String,
+        functionUniqueKey: String,
         functionParameterTypes: List<Class<*>>,
         functionParameterValues: List<Any?>,
         isSuspended: Boolean
