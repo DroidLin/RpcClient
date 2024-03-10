@@ -11,7 +11,7 @@ internal class AndroidCallServiceStub(private val callService: AndroidCallServic
 
     override val isOpen: Boolean get() = true
 
-    val rpcInterface = RPCInterface { aidlRequest ->
+    val aidlFunction = AIDLFunction { aidlRequest ->
         val result = kotlin.runCatching {
             when (aidlRequest) {
                 is AndroidInvocationRequest -> this.callFunction(

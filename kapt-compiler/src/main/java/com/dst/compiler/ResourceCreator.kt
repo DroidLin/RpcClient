@@ -1,9 +1,11 @@
 package com.dst.compiler
 
+import com.dst.rpc.Address
 import com.dst.rpc.ExceptionHandler
 import com.dst.rpc.StubFunction
 import com.dst.rpc.RPCInterfaceRegistry
 import com.dst.rpc.RPCollector
+import com.dst.rpc.annotations.RPCImplementation
 import org.jetbrains.annotations.NotNull
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.PackageElement
@@ -18,13 +20,15 @@ internal object ResourceCreator {
 
     fun resourceCreate(
         environment: ProcessingEnvironment,
-        annotatedClassDeclaredElementList: List<TypeElement>
+        interfaceAnnotatedElements: List<TypeElement>,
+        interfaceImplementationElements: List<TypeElement>
     ) {
-        if (annotatedClassDeclaredElementList.isEmpty()) {
+        if (interfaceAnnotatedElements.isEmpty() && interfaceImplementationElements.isEmpty()) {
             return
         }
-
-        val firstClassDeclaration = annotatedClassDeclaredElementList.first()
+        val firstClassDeclaration = interfaceAnnotatedElements.firstOrNull()
+            ?: interfaceImplementationElements.firstOrNull()
+            ?: return
         val packageName = (firstClassDeclaration.enclosingElement as PackageElement).qualifiedName.toString()
         val generatedClassName = "${RPCollector::class.java.simpleName}_${Integer.toHexString(firstClassDeclaration.simpleName.hashCode())}"
 
@@ -37,28 +41,39 @@ internal object ResourceCreator {
             .appendLine("import ${RPCInterfaceRegistry::class.java.name};")
             .appendLine("import ${ExceptionHandler::class.java.name};")
             .appendLine("import ${StubFunction::class.java.name};")
+            .appendLine("import ${Address::class.java.name};")
             .appendLine()
             .appendLine("public class $generatedClassName implements RPCollector {")
             .appendLine()
             .appendLine("\t@Override")
             .appendLine("\tpublic void collect(@NotNull RPCInterfaceRegistry registry) {")
             .apply {
-                annotatedClassDeclaredElementList.forEachIndexed { index, typeElement ->
+                interfaceAnnotatedElements.forEachIndexed { index, typeElement ->
                     if (index != 0) {
                         appendLine()
                     }
-                    appendLine("\t\tregistry.putServiceProxyLazy(${typeElement.qualifiedName}.class, new kotlin.jvm.functions.Function3<RPCAddress, RPCAddress, ExceptionHandler, ${typeElement.qualifiedName}>() {")
+                    appendLine("\t\tregistry.putServiceProxyLazy(${typeElement.qualifiedName}.class, new kotlin.jvm.functions.Function3<Address, Address, ExceptionHandler, ${typeElement.qualifiedName}>() {")
                         .appendLine("\t\t\t@Override")
-                        .appendLine("\t\t\tpublic ${typeElement.qualifiedName} invoke(@NotNull RPCAddress sourceAddress, @NotNull RPCAddress remoteAddress, @NotNull ExceptionHandler exceptionHandler) {")
+                        .appendLine("\t\t\tpublic ${typeElement.qualifiedName} invoke(@NotNull Address sourceAddress, @NotNull Address remoteAddress, @NotNull ExceptionHandler exceptionHandler) {")
                         .appendLine("\t\t\t\treturn new ${typeElement.qualifiedName}_Generated_Proxy(sourceAddress, remoteAddress, exceptionHandler);")
                         .appendLine("\t\t\t}")
                         .appendLine("\t\t});")
                     appendLine("\t\tregistry.putServiceStubLazy(${typeElement.qualifiedName}.class, new kotlin.jvm.functions.Function1<${typeElement.qualifiedName}, StubFunction>() {")
-                        .appendLine("\t\t\t@${Override::class.java.name}")
+                        .appendLine("\t\t\t@Override")
                         .appendLine("\t\t\tpublic StubFunction invoke(@NotNull ${typeElement.qualifiedName} impl) {")
                         .appendLine("\t\t\t\treturn new ${typeElement.qualifiedName}_Generated_Stub(impl);")
                         .appendLine("\t\t\t}")
                         .appendLine("\t\t});")
+                }
+                interfaceImplementationElements.forEachIndexed { index, typeElement ->
+                    if (index == 0) {
+                        appendLine()
+                    }
+                    val annotation = typeElement.annotationMirrors.find { it.annotationType.toString() == RPCImplementation::class.java.name }
+                    if (annotation != null) {
+                        val clazz = annotation.elementValues.firstNotNullOf { if (it.key.simpleName.toString() == "clazz") it.value else null }
+                        appendLine("\t\tregistry.putServiceImpl(${clazz.value}.class, new ${typeElement.qualifiedName}());")
+                    }
                 }
             }
             .appendLine("\t}")

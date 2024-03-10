@@ -57,13 +57,13 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                             continuation.resume(AIDLConnection(callService))
                         }
                     })
-                    val rpContext = RPContext(
+                    val AIDLContext = AIDLContext(
                         remoteServiceName = this@AIDLClient.remoteAndroidServiceClass?.name ?: "",
                         sourceAddress = AndroidAddress(sourceAddress),
                         remoteAddress = AndroidAddress(remoteAddress),
-                        rpCorrelator = localRPCorrelator
+                        callService = localRPCorrelator
                     )
-                    AIDLConnector.attach(strategy = this@AIDLClient.strategy, rpContext = rpContext, androidContext = this@AIDLClient.androidContext)
+                    AIDLConnector.attach(strategy = this@AIDLClient.strategy, AIDLContext = AIDLContext, androidContext = this@AIDLClient.androidContext)
                 }
             }
         }

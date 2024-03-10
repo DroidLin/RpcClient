@@ -1,5 +1,6 @@
 package com.dst.compiler
 
+import com.dst.rpc.annotations.RPCImplementation
 import com.dst.rpc.annotations.RPCInterface
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.RoundEnvironment
@@ -23,16 +24,18 @@ class RemoteProcessAnnotationProcessor : AbstractProcessor() {
         roundEnvironment: RoundEnvironment?
     ): Boolean {
         if (roundEnvironment == null) return false
-        val annotatedElements = roundEnvironment.getElementsAnnotatedWith(RPCInterface::class.java)
+        val interfaceAnnotatedElements = roundEnvironment.getElementsAnnotatedWith(RPCInterface::class.java)
             .filterIsInstance<TypeElement>()
-        annotatedElements.forEach { element ->
+        interfaceAnnotatedElements.forEach { element ->
             require(element.kind == ElementKind.INTERFACE) {
                 "annotation requires ${element.simpleName} declared as interface"
             }
             InterfaceProxyClassGenerator.buildInterfaceProxyImplementationClass(this.processingEnv, element)
             InterfaceStubClassGenerator.buildInterfaceProxyImplementationClass(this.processingEnv, element)
         }
-        ResourceCreator.resourceCreate(this.processingEnv, annotatedElements)
+        val interfaceImplementationElements = roundEnvironment.getElementsAnnotatedWith(RPCImplementation::class.java)
+            .filterIsInstance<TypeElement>()
+        ResourceCreator.resourceCreate(this.processingEnv, interfaceAnnotatedElements, interfaceImplementationElements)
         return false
     }
 }

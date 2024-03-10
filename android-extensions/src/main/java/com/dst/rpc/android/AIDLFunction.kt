@@ -8,7 +8,7 @@ import java.util.*
  * @author liuzhongao
  * @since 2024/3/2 01:14
  */
-internal interface RPCInterface : INoProguard {
+internal interface AIDLFunction : INoProguard {
 
     val isAlive: Boolean
 
@@ -24,29 +24,29 @@ internal interface RPCInterface : INoProguard {
     }
 }
 
-internal val RPCInterface.iBinder: IBinder
+internal val AIDLFunction.iBinder: IBinder
     get() = when (this) {
-        is RPCInterfaceImpl -> this.function.asBinder()
-        is RPCInterfaceImplStub -> this.function.asBinder()
-        else -> throw IllegalArgumentException("unknown type of current RPCInterface: ${this.javaClass.name}")
+        is AIDLFunctionImpl -> this.function.asBinder()
+        is AIDLFunctionImplStub -> this.function.asBinder()
+        else -> throw IllegalArgumentException("unknown type of current AIDLFunction: ${this.javaClass.name}")
     }
 
-internal fun RPCInterface(function: Function): RPCInterface = RPCInterfaceImpl(function = function)
+internal fun AIDLFunction(function: Function): AIDLFunction = AIDLFunctionImpl(function = function)
 
-internal fun RPCInterface(block: (Request) -> Response): RPCInterface {
-    return object : RPCInterfaceImplStub() {
+internal fun AIDLFunction(block: (Request) -> Response): AIDLFunction {
+    return object : AIDLFunctionImplStub() {
         override fun invoke(request: Request): Response = block(request)
     }
 }
 
-private class RPCInterfaceImpl(val function: Function) : RPCInterface {
+private class AIDLFunctionImpl(val function: Function) : AIDLFunction {
 
-    private val deathListenerList = LinkedList<RPCInterface.DeathListener>()
+    private val deathListenerList = LinkedList<AIDLFunction.DeathListener>()
     private val deathRecipient = object : IBinder.DeathRecipient {
         override fun binderDied() {
-            this@RPCInterfaceImpl.function.asBinder().unlinkToDeath(this, 0)
-            val tempDeathListenerList = synchronized(this@RPCInterfaceImpl) {
-                this@RPCInterfaceImpl.deathListenerList.toList()
+            this@AIDLFunctionImpl.function.asBinder().unlinkToDeath(this, 0)
+            val tempDeathListenerList = synchronized(this@AIDLFunctionImpl) {
+                this@AIDLFunctionImpl.deathListenerList.toList()
             }
             tempDeathListenerList.forEach { it.onConnectionLoss() }
         }
@@ -73,26 +73,26 @@ private class RPCInterfaceImpl(val function: Function) : RPCInterface {
         return response ?: Response
     }
 
-    override fun addDeathListener(deathListener: RPCInterface.DeathListener) {
+    override fun addDeathListener(deathListener: AIDLFunction.DeathListener) {
         synchronized(this) {
             this.deathListenerList += deathListener
         }
     }
 
-    override fun removeDeathListener(deathListener: RPCInterface.DeathListener) {
+    override fun removeDeathListener(deathListener: AIDLFunction.DeathListener) {
         synchronized(this) {
             this.deathListenerList -= deathListener
         }
     }
 }
 
-private abstract class RPCInterfaceImplStub : RPCInterface {
+private abstract class AIDLFunctionImplStub : AIDLFunction {
 
     val function = object : Function.Stub() {
         override fun invoke(bridge: TransportBridge?) {
             val request = bridge?.request
             bridge?.response = if (request != null && request is Request) {
-                this@RPCInterfaceImplStub.invoke(request)
+                this@AIDLFunctionImplStub.invoke(request)
             } else Response
         }
     }

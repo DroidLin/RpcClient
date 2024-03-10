@@ -1,5 +1,6 @@
 package com.dst.compiler
 
+import com.dst.rpc.Address
 import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.isInternal
@@ -93,8 +94,8 @@ internal object InterfaceProxyClassGenerator {
         body: () -> Unit
     ) {
         writer.appendLine("class $className @kotlin.jvm.JvmOverloads constructor(")
-            .appendLine("\tsourceAddress: com.dst.rpc.RPCAddress,")
-            .appendLine("\tremoteAddress: com.dst.rpc.RPCAddress,")
+            .appendLine("\tsourceAddress: ${Address::class.java.name},")
+            .appendLine("\tremoteAddress: ${Address::class.java.name},")
             .appendLine("\texceptionHandler: com.dst.rpc.ExceptionHandler = com.dst.rpc.ExceptionHandler")
             .appendLine(") : ${requireNotNull(interfaceDeclaration.qualifiedName).asString()} {")
             .appendLine()

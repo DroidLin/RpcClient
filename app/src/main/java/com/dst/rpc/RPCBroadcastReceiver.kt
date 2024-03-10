@@ -1,8 +1,8 @@
 package com.dst.rpc
 
-import com.dst.rpc.android.AIDLRPCAddress
+import com.dst.rpc.android.AIDLAddress
 import com.dst.rpc.android.AndroidAddress
-import com.dst.rpc.android.RPContext
+import com.dst.rpc.android.AIDLContext
 import com.dst.rpc.android.component.AbstractRPCBroadcastReceiver
 
 /**
@@ -10,8 +10,8 @@ import com.dst.rpc.android.component.AbstractRPCBroadcastReceiver
  * @since 2024/3/10 11:11
  */
 class RPCBroadcastReceiver : AbstractRPCBroadcastReceiver() {
-    override val addressOfCurrentReceiver: AIDLRPCAddress = AndroidAddress(libraryProcessAddress)
+    override val addressOfCurrentReceiver: AIDLAddress = AndroidAddress(libraryProcessAddress)
 
-    override fun onReceiveRPConnection(context: RPContext) {
+    override fun onReceiveRPConnection(context: AIDLContext) {
     }
 }

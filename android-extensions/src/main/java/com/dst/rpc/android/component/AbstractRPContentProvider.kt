@@ -7,8 +7,8 @@ import android.net.Uri
 import android.os.Bundle
 import com.dst.rpc.android.AIDLClient
 import com.dst.rpc.android.AIDLConnection
-import com.dst.rpc.android.AIDLRPCAddress
-import com.dst.rpc.android.RPContext
+import com.dst.rpc.android.AIDLAddress
+import com.dst.rpc.android.AIDLContext
 import kotlinx.coroutines.CompletableDeferred
 
 /**
@@ -17,9 +17,9 @@ import kotlinx.coroutines.CompletableDeferred
  */
 abstract class AbstractRPContentProvider : ContentProvider() {
 
-    protected abstract val addressOfCurrentProvider: AIDLRPCAddress
+    protected abstract val addressOfCurrentProvider: AIDLAddress
 
-    protected abstract fun onReceiveRPConnection(context: RPContext)
+    protected abstract fun onReceiveRPConnection(context: AIDLContext)
 
     override fun onCreate(): Boolean = true
 
@@ -30,8 +30,8 @@ abstract class AbstractRPContentProvider : ContentProvider() {
         val rpContext = extras?.rpcContext ?: return null
         if (this.addressOfCurrentProvider == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
-            AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
+            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.callService)))
+            AIDLClient.twoWayConnectionEstablish(rpContext.callService)
         }
         return null
     }

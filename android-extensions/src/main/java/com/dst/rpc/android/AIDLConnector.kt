@@ -12,27 +12,27 @@ import com.dst.rpc.android.component.rpcContext
  */
 internal interface AIDLConnector {
 
-    fun attach(androidContext: Context, rpContext: RPContext)
+    fun attach(androidContext: Context, AIDLContext: AIDLContext)
 
     companion object {
         @JvmStatic
-        fun attach(strategy: EstablishStrategy, rpContext: RPContext, androidContext: Context) {
+        fun attach(strategy: EstablishStrategy, AIDLContext: AIDLContext, androidContext: Context) {
             when (strategy) {
                 EstablishStrategy.ContentProvider -> AndroidContentProviderConnector
                 EstablishStrategy.BroadcastReceiver -> AndroidBroadcastReceiverConnector
                 EstablishStrategy.Service -> AndroidServiceConnector
                 else -> throw RuntimeException("unknown EstablishStrategy: ${strategy}")
-            }.attach(androidContext, rpContext)
+            }.attach(androidContext, AIDLContext)
         }
     }
 }
 
 private object AndroidServiceConnector : AIDLConnector {
-    override fun attach(androidContext: Context, rpContext: RPContext) {
+    override fun attach(androidContext: Context, AIDLContext: AIDLContext) {
         val broadcastIntent = Intent()
-        broadcastIntent.rpcContext = rpContext
+        broadcastIntent.rpcContext = AIDLContext
         broadcastIntent.`package` = androidContext.packageName
-        broadcastIntent.component = ComponentName(androidContext.packageName, rpContext.remoteServiceName)
+        broadcastIntent.component = ComponentName(androidContext.packageName, AIDLContext.remoteServiceName)
         androidContext.startService(broadcastIntent)
     }
 }
@@ -41,17 +41,17 @@ private object AndroidContentProviderConnector : AIDLConnector {
 
     private const val METHOD = "connection"
 
-    override fun attach(androidContext: Context, rpContext: RPContext) {
+    override fun attach(androidContext: Context, AIDLContext: AIDLContext) {
         val bundle = Bundle()
-        bundle.rpcContext = rpContext
-        androidContext.contentResolver.call(rpContext.remoteAddress.uri, METHOD, null, bundle)
+        bundle.rpcContext = AIDLContext
+        androidContext.contentResolver.call(AIDLContext.remoteAddress.uri, METHOD, null, bundle)
     }
 }
 
 private object AndroidBroadcastReceiverConnector : AIDLConnector {
-    override fun attach(androidContext: Context, rpContext: RPContext) {
-        val broadcastIntent = Intent(rpContext.remoteAddress.value)
-        broadcastIntent.rpcContext = rpContext
+    override fun attach(androidContext: Context, AIDLContext: AIDLContext) {
+        val broadcastIntent = Intent(AIDLContext.remoteAddress.value)
+        broadcastIntent.rpcContext = AIDLContext
         broadcastIntent.`package` = androidContext.packageName
         androidContext.sendBroadcast(broadcastIntent)
     }

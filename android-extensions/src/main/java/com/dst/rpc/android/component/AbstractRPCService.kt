@@ -4,8 +4,8 @@ import android.app.Service
 import android.content.Intent
 import com.dst.rpc.android.AIDLClient
 import com.dst.rpc.android.AIDLConnection
-import com.dst.rpc.android.AIDLRPCAddress
-import com.dst.rpc.android.RPContext
+import com.dst.rpc.android.AIDLAddress
+import com.dst.rpc.android.AIDLContext
 import kotlinx.coroutines.CompletableDeferred
 
 /**
@@ -14,16 +14,16 @@ import kotlinx.coroutines.CompletableDeferred
  */
 abstract class AbstractRPCService : Service() {
 
-    protected abstract val addressOfCurrentService: AIDLRPCAddress
+    protected abstract val addressOfCurrentService: AIDLAddress
 
-    protected abstract fun onReceiveRPConnection(context: RPContext)
+    protected abstract fun onReceiveRPConnection(context: AIDLContext)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val rpContext = intent?.rpcContext ?: return super.onStartCommand(intent, flags, startId)
         if (this.addressOfCurrentService == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
-            AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
+            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.callService)))
+            AIDLClient.twoWayConnectionEstablish(rpContext.callService)
         }
         return super.onStartCommand(intent, flags, startId)
     }

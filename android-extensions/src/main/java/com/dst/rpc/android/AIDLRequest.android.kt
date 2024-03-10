@@ -62,7 +62,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
         functionUniqueKey = requireNotNull(parcel.readString()),
         classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
         valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
-        AIDLCallback = AIDLCallback(RPCInterface(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
+        AIDLCallback = AIDLCallback(AIDLFunction(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -130,7 +130,7 @@ internal data class AttachReCorrelatorRequest(
 
     constructor(parcel: Parcel) : this(
         rpCorrelator = AndroidCallService(
-            rpcInterface = RPCInterface(
+            function = AIDLFunction(
                 function = Function.Stub.asInterface(
                     requireNotNull(
                         parcel.readStrongBinder()

@@ -14,7 +14,7 @@ interface AndroidCallService : CallService {
 
 internal val AndroidCallService.iBinder: IBinder
     get() = when (this) {
-        is AndroidCallServiceProxy -> this.rpcInterface.iBinder
-        is AndroidCallServiceStub -> this.rpcInterface.iBinder
+        is AndroidCallServiceProxy -> this.aidlFunction.iBinder
+        is AndroidCallServiceStub -> this.aidlFunction.iBinder
         else -> throw IllegalArgumentException("unknown type of current AndroidCallService: ${this.javaClass.name}")
     }

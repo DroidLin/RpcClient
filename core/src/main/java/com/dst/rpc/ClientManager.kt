@@ -132,6 +132,10 @@ object ClientManager {
                         override fun <T : INoProguard> putServiceStubLazy(clazz: Class<T>, factory: (T) -> StubFunction) {
                             this@ClientManager.interfaceStubFactories[clazz] = factory as (INoProguard) -> StubFunction
                         }
+
+                        override fun <T : INoProguard> putServiceImpl(clazz: Class<T>, impl: T) {
+                            this@ClientManager.putService(clazz, impl)
+                        }
                     }
                     ServiceLoader.load(RPCollector::class.java).forEach { it.collect(registry) }
                 }

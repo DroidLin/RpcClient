@@ -9,4 +9,6 @@ interface RPCInterfaceRegistry {
     fun <T : INoProguard> putServiceProxyLazy(clazz: Class<T>, factory: (Address, Address, ExceptionHandler) -> T)
 
     fun <T : INoProguard> putServiceStubLazy(clazz: Class<T>, factory: (T) -> StubFunction)
+
+    fun <T : INoProguard> putServiceImpl(clazz: Class<T>, impl: T)
 }

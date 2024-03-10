@@ -10,24 +10,25 @@ internal fun interface AIDLCallback : CallService.Callback {
 
 internal val AIDLCallback.iBinder: IBinder
     get() = when (this) {
-        is AIDLCallbackProxy -> this.rpcInterface.iBinder
-        is AIDLCallbackStub -> this.rpcInterface.iBinder
+        is AIDLCallbackProxy -> this.aidlFunction.iBinder
+        is AIDLCallbackStub -> this.aidlFunction.iBinder
         else -> throw IllegalArgumentException("unknown type of current RPCallback: ${this.javaClass.name}")
     }
 
-internal fun AIDLCallback(rpcInterface: RPCInterface): AIDLCallback = AIDLCallbackProxy(rpcInterface)
+internal fun AIDLCallback(aidlFunction: AIDLFunction): AIDLCallback = AIDLCallbackProxy(aidlFunction)
 
 internal fun AIDLCallback(callback: AIDLCallback): AIDLCallback = AIDLCallbackStub(callback)
 
-private class AIDLCallbackProxy(val rpcInterface: RPCInterface): AIDLCallback {
+private class AIDLCallbackProxy(val aidlFunction: AIDLFunction): AIDLCallback {
+
     override fun callback(data: Any?, throwable: Throwable?) {
         val request = RPCallbackRequest(data = data, throwable = throwable)
-        rpcInterface.invoke(request = request)
+        this.aidlFunction.invoke(request = request)
     }
 }
 
 private class AIDLCallbackStub(callback: AIDLCallback) : AIDLCallback by callback {
-    val rpcInterface = RPCInterface { request ->
+    val aidlFunction = AIDLFunction { request ->
         if (request is RPCallbackRequest) {
             callback(data = request.data, throwable = request.throwable)
         }

@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import com.dst.rpc.android.AIDLClient
 import com.dst.rpc.android.AIDLConnection
-import com.dst.rpc.android.AIDLRPCAddress
-import com.dst.rpc.android.RPContext
+import com.dst.rpc.android.AIDLAddress
+import com.dst.rpc.android.AIDLContext
 import kotlinx.coroutines.CompletableDeferred
 
 /**
@@ -15,16 +15,16 @@ import kotlinx.coroutines.CompletableDeferred
  */
 abstract class AbstractRPCBroadcastReceiver : BroadcastReceiver() {
 
-    protected abstract val addressOfCurrentReceiver: AIDLRPCAddress
+    protected abstract val addressOfCurrentReceiver: AIDLAddress
 
-    protected abstract fun onReceiveRPConnection(context: RPContext)
+    protected abstract fun onReceiveRPConnection(context: AIDLContext)
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val rpContext = intent?.rpcContext ?: return
         if (this.addressOfCurrentReceiver == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
-            AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
+            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.callService)))
+            AIDLClient.twoWayConnectionEstablish(rpContext.callService)
         }
     }
 }

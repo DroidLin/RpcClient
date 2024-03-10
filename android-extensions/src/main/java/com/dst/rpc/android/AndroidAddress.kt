@@ -10,7 +10,7 @@ import com.dst.rpc.Address
  * @author liuzhongao
  * @since 2024/3/3 14:55
  */
-data class AndroidAddress(override val uri: Uri) : AIDLRPCAddress {
+data class AndroidAddress(override val uri: Uri) : AIDLAddress {
 
     constructor(address: String) : this(Uri.parse(address))
 

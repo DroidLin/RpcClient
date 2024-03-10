@@ -6,14 +6,15 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-internal fun AndroidCallService(rpcInterface: RPCInterface): AndroidCallService = AndroidCallServiceProxy(rpcInterface)
+internal fun AndroidCallService(function: AIDLFunction): AndroidCallService = AndroidCallServiceProxy(function)
 
-internal class AndroidCallServiceProxy(val rpcInterface: RPCInterface) : AndroidCallService {
-    override val isOpen: Boolean get() = rpcInterface.isAlive
+internal class AndroidCallServiceProxy(val aidlFunction: AIDLFunction) : AndroidCallService {
+
+    override val isOpen: Boolean get() = aidlFunction.isAlive
 
     override fun attachCallService(callService: AndroidCallService) {
         val request = AttachReCorrelatorRequest(callService)
-        this.rpcInterface.invoke(request = request)
+        this.aidlFunction.invoke(request = request)
     }
 
     override fun callFunction(
@@ -30,7 +31,7 @@ internal class AndroidCallServiceProxy(val rpcInterface: RPCInterface) : Android
             classTypesOfFunctionParameter = argumentTypes.map { it.name },
             valuesOfFunctionParameter = argumentValue
         )
-        return when (val result = this.rpcInterface.invoke(request)) {
+        return when (val result = this.aidlFunction.invoke(request)) {
             is AndroidParcelableInvocationResponse -> {
                 val throwable = result.throwable
                 if (throwable != null) {
@@ -50,14 +51,14 @@ internal class AndroidCallServiceProxy(val rpcInterface: RPCInterface) : Android
         argumentValue: List<Any?>
     ): Any? = suspendCoroutineUninterceptedOrReturn { continuation ->
         val oneShotContinuation = OneShotContinuation(continuation)
-        val deathListener = object : RPCInterface.DeathListener {
+        val deathListener = object : AIDLFunction.DeathListener {
             override fun onConnectionLoss() {
-                this@AndroidCallServiceProxy.rpcInterface.removeDeathListener(this)
+                this@AndroidCallServiceProxy.aidlFunction.removeDeathListener(this)
                 oneShotContinuation.resume(null)
             }
         }
         val rpCallback = AIDLCallback(AIDLCallback { data, throwable ->
-            this@AndroidCallServiceProxy.rpcInterface.removeDeathListener(deathListener)
+            this@AndroidCallServiceProxy.aidlFunction.removeDeathListener(deathListener)
             if (throwable != null) {
                 oneShotContinuation.resumeWithException(Throwable(throwable))
             } else oneShotContinuation.resume(data)
@@ -70,8 +71,8 @@ internal class AndroidCallServiceProxy(val rpcInterface: RPCInterface) : Android
             valuesOfFunctionParameter = argumentValue,
             AIDLCallback = rpCallback
         )
-        this.rpcInterface.addDeathListener(deathListener)
-        return@suspendCoroutineUninterceptedOrReturn when (val result = this.rpcInterface.invoke(request)) {
+        this.aidlFunction.addDeathListener(deathListener)
+        return@suspendCoroutineUninterceptedOrReturn when (val result = this.aidlFunction.invoke(request)) {
             is AndroidParcelableInvocationResponse -> {
                 val throwable = result.throwable
                 if (throwable != null) {
