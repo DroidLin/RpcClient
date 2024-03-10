@@ -3,15 +3,12 @@ package com.dst.compiler
 import com.dst.rpc.ClientManager
 import com.dst.rpc.Connection
 import com.dst.rpc.ExceptionHandler
-import com.dst.rpc.RPCAddress
+import com.dst.rpc.Address
 import org.jetbrains.annotations.NotNull
-import java.io.Writer
 import javax.annotation.processing.ProcessingEnvironment
-import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.PackageElement
 import javax.lang.model.element.TypeElement
-import javax.lang.model.type.DeclaredType
 
 /**
  * @author liuzhongao
@@ -37,15 +34,15 @@ internal object InterfaceProxyClassGenerator {
             .appendLine("\tprivate final ${Connection::class.java.name} connection;")
             .appendLine()
             .append("\tpublic ${newClassName}(")
-            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} sourceAddress, ")
-            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} remoteAddress")
+            .append("@${NotNull::class.java.name} ${Address::class.java.name} sourceAddress, ")
+            .append("@${NotNull::class.java.name} ${Address::class.java.name} remoteAddress")
             .appendLine(") {")
             .appendLine("\t\tthis.connection = ${ClientManager::class.java.name}.openConnection(sourceAddress, remoteAddress);")
             .appendLine("\t}")
             .appendLine()
             .append("\tpublic ${newClassName}(")
-            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} sourceAddress, ")
-            .append("@${NotNull::class.java.name} ${RPCAddress::class.java.name} remoteAddress, ")
+            .append("@${NotNull::class.java.name} ${Address::class.java.name} sourceAddress, ")
+            .append("@${NotNull::class.java.name} ${Address::class.java.name} remoteAddress, ")
             .append("@${NotNull::class.java.name} ${ExceptionHandler::class.java.name} exceptionHandler")
             .appendLine(") {")
             .appendLine("\t\tthis.connection = ${ClientManager::class.java.name}.openConnection(sourceAddress, remoteAddress, exceptionHandler);")
@@ -58,7 +55,7 @@ internal object InterfaceProxyClassGenerator {
                             continue
                         }
                         appendLine()
-                            .appendLine("\t@${Override::class.java.name}")
+                            .appendLine("\t@Override")
                             .append("\tpublic final ${function.returnType} ${function.simpleName}(")
                         val methodParameter = function.parameters
                         if (methodParameter.isNotEmpty()) {

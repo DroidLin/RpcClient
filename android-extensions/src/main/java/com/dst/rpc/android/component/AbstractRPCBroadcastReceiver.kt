@@ -23,7 +23,7 @@ abstract class AbstractRPCBroadcastReceiver : BroadcastReceiver() {
         val rpContext = intent?.rpcContext ?: return
         if (this.addressOfCurrentReceiver == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            AIDLClient.acceptConnectionTask(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
+            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
             AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
         }
     }

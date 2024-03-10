@@ -23,7 +23,7 @@ class ExceptionHandleConnection(
         isSuspended: Boolean
     ): Any? {
         val result = kotlin.runCatching {
-            this.rawConnectionProvider.invoke().call(
+            this.rawConnectionProvider().call(
                 functionOwner = functionOwner,
                 functionName = functionName,
                 functionUniqueKey = functionUniqueKey,

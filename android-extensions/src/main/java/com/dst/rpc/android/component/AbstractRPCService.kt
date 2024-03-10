@@ -22,7 +22,7 @@ abstract class AbstractRPCService : Service() {
         val rpContext = intent?.rpcContext ?: return super.onStartCommand(intent, flags, startId)
         if (this.addressOfCurrentService == rpContext.remoteAddress) {
             this.onReceiveRPConnection(context = rpContext)
-            AIDLClient.acceptConnectionTask(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
+            AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.rpCorrelator)))
             AIDLClient.twoWayConnectionEstablish(rpContext.rpCorrelator)
         }
         return super.onStartCommand(intent, flags, startId)

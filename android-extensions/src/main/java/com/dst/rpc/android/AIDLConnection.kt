@@ -15,7 +15,7 @@ import kotlin.coroutines.Continuation
  * @since 2024/3/4 11:13
  */
 internal class AIDLConnection(
-    private val rpCorrelator: AndroidRPCorrelator
+    private val rpCorrelator: AndroidCallService
 ) : Connection {
 
     override val isClosed: Boolean get() = !this.rpCorrelator.isOpen

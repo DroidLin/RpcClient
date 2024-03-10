@@ -12,13 +12,13 @@ internal class SocketClient(initConfig: InitConfig) : Client {
     private val connectionTimeout: Long = initConfig.connectTimeout
 
     override fun openConnection(
-        sourceAddress: RPCAddress,
-        remoteAddress: RPCAddress
+        sourceAddress: Address,
+        remoteAddress: Address
     ): Connection = this.openConnection(sourceAddress, remoteAddress) { false }
 
     override fun openConnection(
-        sourceAddress: RPCAddress,
-        remoteAddress: RPCAddress,
+        sourceAddress: Address,
+        remoteAddress: Address,
         exceptionHandler: ExceptionHandler
     ): Connection {
         val rpCorrelator = RPCorrelator(sourceAddress, remoteAddress, this.connectionTimeout)

@@ -11,7 +11,7 @@ object ClientManager {
 
     private val interfaceImplementationReference = HashMap<Class<*>, INoProguard>()
 
-    private val interfaceProxyFactories: MutableMap<Class<*>, (RPCAddress, RPCAddress, ExceptionHandler) -> INoProguard> = HashMap()
+    private val interfaceProxyFactories: MutableMap<Class<*>, (Address, Address, ExceptionHandler) -> INoProguard> = HashMap()
     private val interfaceStubFactories: MutableMap<Class<*>, (INoProguard) -> StubFunction> = HashMap()
 
     private val interfaceStubFunctionCache: MutableMap<Class<*>, StubFunction> = HashMap()
@@ -30,16 +30,16 @@ object ClientManager {
     }
 
     @JvmStatic
-    fun addressCreate(value: String): RPCAddress {
+    fun addressCreate(value: String): Address {
         this.collectClientFactories()
         return this.remoteClientFactoryMap.firstNotNullOfOrNull {
             it.addressCreate(value)
-        } ?: RPCAddress(value = value)
+        } ?: Address(value = value)
     }
 
     @JvmStatic
     @JvmOverloads
-    fun openConnection(sourceAddress: RPCAddress, remoteAddress: RPCAddress, exceptionHandler: ExceptionHandler = ExceptionHandler): Connection {
+    fun openConnection(sourceAddress: Address, remoteAddress: Address, exceptionHandler: ExceptionHandler = ExceptionHandler): Connection {
         this.collectClientFactories()
         return this.acquireClient(remoteAddress = remoteAddress)
             .openConnection(sourceAddress, remoteAddress, exceptionHandler)
@@ -86,7 +86,7 @@ object ClientManager {
      * when an exception is not handled by [exceptionHandler], it will be throws at the call point.
      */
     @JvmOverloads
-    fun <T : INoProguard> serviceCreate(clazz: Class<*>, sourceAddress: RPCAddress, remoteAddress: RPCAddress, exceptionHandler: ExceptionHandler = ExceptionHandler): T {
+    fun <T : INoProguard> serviceCreate(clazz: Class<*>, sourceAddress: Address, remoteAddress: Address, exceptionHandler: ExceptionHandler = ExceptionHandler): T {
         val factory = this.interfaceProxyFactories[clazz]
         if (factory != null) {
             return factory.invoke(sourceAddress, remoteAddress, exceptionHandler) as T
@@ -125,7 +125,7 @@ object ClientManager {
             synchronized(this) {
                 if (isProxyFactoriesEmpty() || isStubFactoriesEmpty()) {
                     val registry = object : RPCInterfaceRegistry {
-                        override fun <T : INoProguard> putServiceProxyLazy(clazz: Class<T>, factory: (RPCAddress, RPCAddress, ExceptionHandler) -> T) {
+                        override fun <T : INoProguard> putServiceProxyLazy(clazz: Class<T>, factory: (Address, Address, ExceptionHandler) -> T) {
                             this@ClientManager.interfaceProxyFactories[clazz] = factory
                         }
 
@@ -142,7 +142,7 @@ object ClientManager {
     /**
      * get Client work for [remoteAddress], may throw RuntimeException if there is no factory accept.
      */
-    private fun acquireClient(remoteAddress: RPCAddress): Client {
+    private fun acquireClient(remoteAddress: Address): Client {
         if (this.remoteClientImplMap[remoteAddress.value] == null) {
             synchronized(this) {
                 if (this.remoteClientImplMap[remoteAddress.value] == null) {

@@ -1,6 +1,7 @@
 package com.dst.rpc.socket
 
-import com.dst.rpc.RPCAddress
+import com.dst.rpc.Address
+import com.dst.rpc.CallService
 import com.dst.rpc.socket.serializer.KEY_FUNCTION_SUSPEND_CALLBACK
 import com.dst.rpc.socket.serializer.SerializeWriter
 import java.net.InetSocketAddress
@@ -10,18 +11,18 @@ import java.net.Socket
  * @author liuzhongao
  * @since 2024/3/7 00:32
  */
-internal fun interface SocketRPCallback {
+internal fun interface SocketCallback : CallService.Callback {
 
-    fun callback(data: Any?, throwable: Throwable?)
+    override fun callback(data: Any?, throwable: Throwable?)
 }
 
-internal fun SocketRPCallback(sourceAddress: RPCAddress, callbackToken: Long): SocketRPCallback =
-    SocketRPCallbackImpl(sourceAddress, callbackToken)
+internal fun SocketCallback(sourceAddress: Address, callbackToken: Long): SocketCallback =
+    SocketCallbackImpl(sourceAddress, callbackToken)
 
-private class SocketRPCallbackImpl(
-    private val sourceAddress: RPCAddress,
+private class SocketCallbackImpl(
+    private val sourceAddress: Address,
     private val callbackToken: Long
-) : SocketRPCallback {
+) : SocketCallback {
     override fun callback(data: Any?, throwable: Throwable?) {
         val tempSocket = Socket().also { socket ->
             val callbackAddress = InetSocketAddress(this.sourceAddress.domain, this.sourceAddress.port)
@@ -38,5 +39,7 @@ private class SocketRPCallbackImpl(
         tempSocket.getOutputStream().flush()
         tempSocket.getOutputStream().close()
         tempSocket.shutdownOutput()
+        tempSocket.shutdownInput()
+        tempSocket.close()
     }
 }

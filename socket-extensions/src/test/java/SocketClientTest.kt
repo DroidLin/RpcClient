@@ -1,6 +1,6 @@
 import com.dst.rpc.ClientManager
 import com.dst.rpc.InitConfig
-import com.dst.rpc.RPCAddress
+import com.dst.rpc.Address
 import com.dst.rpc.socket.sourceAddress
 import kotlinx.coroutines.runBlocking
 
@@ -8,7 +8,7 @@ import kotlinx.coroutines.runBlocking
  * @author liuzhongao
  * @since 2024/3/7 17:25
  */
-internal val clientSocketAddress = RPCAddress("socket", "localhost", 12100)
+internal val clientSocketAddress = Address("socket", "localhost", 12100)
 
 fun main() = runBlocking {
     val initConfig = InitConfig.Builder()

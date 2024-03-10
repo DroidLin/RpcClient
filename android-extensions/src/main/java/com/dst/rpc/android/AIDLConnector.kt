@@ -50,7 +50,7 @@ private object AndroidContentProviderConnector : AIDLConnector {
 
 private object AndroidBroadcastReceiverConnector : AIDLConnector {
     override fun attach(androidContext: Context, rpContext: RPContext) {
-        val broadcastIntent = Intent(rpContext.remoteAddress.uri.toString())
+        val broadcastIntent = Intent(rpContext.remoteAddress.value)
         broadcastIntent.rpcContext = rpContext
         broadcastIntent.`package` = androidContext.packageName
         androidContext.sendBroadcast(broadcastIntent)

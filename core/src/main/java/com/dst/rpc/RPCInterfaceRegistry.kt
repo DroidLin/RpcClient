@@ -6,7 +6,7 @@ package com.dst.rpc
  */
 interface RPCInterfaceRegistry {
 
-    fun <T : INoProguard> putServiceProxyLazy(clazz: Class<T>, factory: (RPCAddress, RPCAddress, ExceptionHandler) -> T)
+    fun <T : INoProguard> putServiceProxyLazy(clazz: Class<T>, factory: (Address, Address, ExceptionHandler) -> T)
 
     fun <T : INoProguard> putServiceStubLazy(clazz: Class<T>, factory: (T) -> StubFunction)
 }

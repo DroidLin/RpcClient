@@ -4,7 +4,7 @@ package com.dst.rpc
  * @author liuzhongao
  * @since 2024/3/5 23:39
  */
-interface RPCorrelator {
+interface CallService {
 
     val isOpen: Boolean get() = false
 
@@ -25,4 +25,9 @@ interface RPCorrelator {
         argumentValue: List<Any?>
     ): Any? = ClientManager.getService(functionOwner as Class<INoProguard>)
         .invokeSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue).safeUnbox()
+
+    fun interface Callback {
+
+        fun callback(data: Any?, throwable: Throwable?)
+    }
 }

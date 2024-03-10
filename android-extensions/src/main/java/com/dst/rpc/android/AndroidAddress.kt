@@ -4,17 +4,17 @@ import android.net.Uri
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
-import com.dst.rpc.RPCAddress
+import com.dst.rpc.Address
 
 /**
  * @author liuzhongao
  * @since 2024/3/3 14:55
  */
-data class AndroidRPCAddress(override val uri: Uri) : AIDLRPCAddress {
+data class AndroidAddress(override val uri: Uri) : AIDLRPCAddress {
 
     constructor(address: String) : this(Uri.parse(address))
 
-    constructor(rpcAddress: RPCAddress) : this(Uri.parse(rpcAddress.value))
+    constructor(address: Address) : this(Uri.parse(address.value))
 
     constructor(parcel: Parcel) : this(
         uri = requireNotNull(if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
@@ -39,12 +39,12 @@ data class AndroidRPCAddress(override val uri: Uri) : AIDLRPCAddress {
         private const val serialVersionUID: Long = -2315364102076331037L
 
         @JvmField
-        val CREATOR = object : Parcelable.Creator<AndroidRPCAddress> {
-            override fun createFromParcel(parcel: Parcel): AndroidRPCAddress {
-                return AndroidRPCAddress(parcel)
+        val CREATOR = object : Parcelable.Creator<AndroidAddress> {
+            override fun createFromParcel(parcel: Parcel): AndroidAddress {
+                return AndroidAddress(parcel)
             }
 
-            override fun newArray(size: Int): Array<AndroidRPCAddress?> {
+            override fun newArray(size: Int): Array<AndroidAddress?> {
                 return arrayOfNulls(size)
             }
         }

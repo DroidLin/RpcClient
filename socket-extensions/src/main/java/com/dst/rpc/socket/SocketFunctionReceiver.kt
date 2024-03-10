@@ -2,7 +2,7 @@ package com.dst.rpc.socket
 
 import com.dst.rpc.InitConfig
 import com.dst.rpc.OneShotContinuation
-import com.dst.rpc.RPCAddress
+import com.dst.rpc.Address
 import com.dst.rpc.socket.serializer.KEY_FUNCTION_SUSPEND_CALLBACK
 import com.dst.rpc.socket.serializer.KEY_FUNCTION_TYPE_NON_SUSPEND
 import com.dst.rpc.socket.serializer.KEY_FUNCTION_TYPE_SUSPEND
@@ -85,10 +85,10 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                 val functionUniqueKey = requireNotNull(serializeReader.readString())
                 val argumentType = requireNotNull(serializeReader.readList<String>()).stringTypeConvert
                 val argumentValue = requireNotNull(serializeReader.readList<Any?>())
-                val socketAddress = requireNotNull(serializeReader.readSerializable() as? RPCAddress)
+                val socketAddress = requireNotNull(serializeReader.readSerializable() as? Address)
                 val token = serializeReader.readLong()
 
-                val socketRPCallback = SocketRPCallback(socketAddress, token)
+                val socketRPCallback = SocketCallback(socketAddress, token)
                 val continuation = Continuation<Any?>(EmptyCoroutineContext) { result ->
                     kotlin.runCatching { socketRPCallback.callback(result.getOrNull(), result.exceptionOrNull()) }
                 }

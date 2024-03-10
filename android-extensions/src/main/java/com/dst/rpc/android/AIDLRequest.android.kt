@@ -53,7 +53,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
     val functionUniqueKey: String,
     val classTypesOfFunctionParameter: List<String>,
     val valuesOfFunctionParameter: List<Any?>,
-    internal val rpCallback: RPCallback,
+    internal val AIDLCallback: AIDLCallback,
 ) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -62,7 +62,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
         functionUniqueKey = requireNotNull(parcel.readString()),
         classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
         valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
-        rpCallback = RPCallback(RPCInterface(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
+        AIDLCallback = AIDLCallback(RPCInterface(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -71,7 +71,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
         parcel.writeString(this.functionUniqueKey)
         parcel.writeList(this.classTypesOfFunctionParameter)
         parcel.writeList(this.valuesOfFunctionParameter)
-        parcel.writeStrongBinder(this.rpCallback.iBinder)
+        parcel.writeStrongBinder(this.AIDLCallback.iBinder)
     }
 
     override fun describeContents(): Int {
@@ -125,11 +125,11 @@ internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? 
 }
 
 internal data class AttachReCorrelatorRequest(
-    val rpCorrelator: AndroidRPCorrelator
+    val rpCorrelator: AndroidCallService
 ) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
-        rpCorrelator = RPCorrelator(
+        rpCorrelator = AndroidCallService(
             rpcInterface = RPCInterface(
                 function = Function.Stub.asInterface(
                     requireNotNull(

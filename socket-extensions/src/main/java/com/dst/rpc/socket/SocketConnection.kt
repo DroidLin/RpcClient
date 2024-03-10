@@ -1,18 +1,17 @@
 package com.dst.rpc.socket
 
 import com.dst.rpc.Connection
-import com.dst.rpc.RPCorrelator
-import java.net.Socket
+import com.dst.rpc.CallService
 
 /**
  * @author liuzhongao
  * @since 2024/3/5 20:56
  */
 internal class SocketConnection(
-    private val rpCorrelator: RPCorrelator,
+    private val callService: CallService,
 ) : Connection {
 
-    override val isClosed: Boolean get() = !this.rpCorrelator.isOpen
+    override val isClosed: Boolean get() = !this.callService.isOpen
 
     override suspend fun call(
         functionOwner: Class<*>,
@@ -23,14 +22,14 @@ internal class SocketConnection(
         isSuspended: Boolean
     ): Any? {
         return if (isSuspended) {
-            this.rpCorrelator.callSuspendFunction(
+            this.callService.callSuspendFunction(
                 functionOwner = functionOwner,
                 functionName = functionName,
                 functionUniqueKey = functionUniqueKey,
                 argumentTypes = functionParameterTypes,
                 argumentValue = functionParameterValues
             )
-        } else this.rpCorrelator.callFunction(
+        } else this.callService.callFunction(
             functionOwner = functionOwner,
             functionName = functionName,
             functionUniqueKey = functionUniqueKey,

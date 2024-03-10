@@ -12,7 +12,7 @@ data class RPContext internal constructor(
     val remoteServiceName: String,
     val sourceAddress: AIDLRPCAddress,
     val remoteAddress: AIDLRPCAddress,
-    internal val rpCorrelator: AndroidRPCorrelator
+    internal val rpCorrelator: AndroidCallService
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -23,7 +23,7 @@ data class RPContext internal constructor(
         remoteAddress = requireNotNull(if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
             parcel.readParcelable(AIDLRPCAddress::class.java.classLoader, AIDLRPCAddress::class.java)
         } else parcel.readParcelable(AIDLRPCAddress::class.java.classLoader)),
-        rpCorrelator = RPCorrelator(RPCInterface(function = Function.Stub.asInterface(parcel.readStrongBinder())))
+        rpCorrelator = AndroidCallService(RPCInterface(function = Function.Stub.asInterface(parcel.readStrongBinder())))
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

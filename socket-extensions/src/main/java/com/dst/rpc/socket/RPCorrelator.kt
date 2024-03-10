@@ -1,10 +1,8 @@
 package com.dst.rpc.socket
 
-import com.dst.rpc.ClientManager
-import com.dst.rpc.INoProguard
 import com.dst.rpc.OneShotContinuation
-import com.dst.rpc.RPCAddress
-import com.dst.rpc.RPCorrelator
+import com.dst.rpc.Address
+import com.dst.rpc.CallService
 import com.dst.rpc.socket.serializer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -19,18 +17,18 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 internal fun RPCorrelator(
-    sourceAddress: RPCAddress,
-    remoteAddress: RPCAddress,
+    sourceAddress: Address,
+    remoteAddress: Address,
     connectionTimeout: Long
-): RPCorrelator = SocketRPCorrelatorProxy(sourceAddress, remoteAddress, connectionTimeout)
+): CallService = SocketCallServiceProxy(sourceAddress, remoteAddress, connectionTimeout)
 
-internal fun RPCorrelator() : RPCorrelator = SocketRPCorrelatorStub()
+internal fun RPCorrelator() : CallService = SocketCallServiceStub()
 
-private class SocketRPCorrelatorProxy(
-    private val sourceAddress: RPCAddress,
-    private val remoteAddress: RPCAddress,
+private class SocketCallServiceProxy(
+    private val sourceAddress: Address,
+    private val remoteAddress: Address,
     private val connectionTimeout: Long
-) : RPCorrelator {
+) : CallService {
 
     private var _socket: Socket? = null
 
@@ -76,16 +74,16 @@ private class SocketRPCorrelatorProxy(
         argumentValue: List<Any?>
     ): Any? = coroutineScope {
         val socket = withContext(Dispatchers.IO) {
-            this@SocketRPCorrelatorProxy.connect()
+            this@SocketCallServiceProxy.connect()
         }
         suspendCoroutineUninterceptedOrReturn { continuation ->
             var token: Long = 0L
             val oneShotContinuation = OneShotContinuation(continuation, this.coroutineContext)
             val timeoutWaitingTask = launch {
-                delay(this@SocketRPCorrelatorProxy.connectionTimeout)
+                delay(this@SocketCallServiceProxy.connectionTimeout)
                 oneShotContinuation.resumeWithException(Throwable("connection timeout for function call: ${functionOwner.name}#${functionName}"))
             }
-            val callback = SocketRPCallback { asyncData, asyncThrowable ->
+            val callback = SocketCallback { asyncData, asyncThrowable ->
                 timeoutWaitingTask.cancel()
                 SocketAsyncInvocationRegistry.removeRPCallback(token)
                 if (asyncThrowable != null) {
@@ -100,7 +98,7 @@ private class SocketRPCorrelatorProxy(
                 serializeWriter.writeString(functionUniqueKey)
                 serializeWriter.writeList(argumentTypes.map { it.name })
                 serializeWriter.writeList(argumentValue)
-                serializeWriter.writeSerializable(this@SocketRPCorrelatorProxy.sourceAddress)
+                serializeWriter.writeSerializable(this@SocketCallServiceProxy.sourceAddress)
                 serializeWriter.writeLong(token)
                 serializeWriter.close()
             }.toByteArray()
@@ -131,7 +129,7 @@ private class SocketRPCorrelatorProxy(
     }
 }
 
-private class SocketRPCorrelatorStub : RPCorrelator {
+private class SocketCallServiceStub : CallService {
 
     override val isOpen: Boolean get() = true
 }

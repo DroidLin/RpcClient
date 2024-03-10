@@ -31,6 +31,10 @@ fun InitConfig.Builder.androidContext(context: Context) =
 val InitConfig.remoteAndroidServiceClass: Class<out Service>?
     get() = this.extraParameters[KEY_REMOTE_ANDROID_SERVICE_COMPONENT_CLASS] as? Class<out Service>
 
+/**
+ * if you choose [EstablishStrategy.Service] as your connection strategy,
+ * you must call this method to let [AIDLConnector] know who the target is.
+ */
 fun InitConfig.Builder.remoteAndroidServiceClass(clazz: Class<out Service>) =
     this.putExtra(KEY_REMOTE_ANDROID_SERVICE_COMPONENT_CLASS, clazz)
 

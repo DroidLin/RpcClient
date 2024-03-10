@@ -9,9 +9,9 @@ import java.util.concurrent.atomic.AtomicLong
 internal object SocketAsyncInvocationRegistry {
 
     private val atomicLong = AtomicLong(Long.MIN_VALUE)
-    private val rpCallbackMap: MutableMap<Long, SocketRPCallback> = HashMap()
+    private val rpCallbackMap: MutableMap<Long, SocketCallback> = HashMap()
 
-    fun addRPCallback(rpCallback: SocketRPCallback): Long {
+    fun addRPCallback(rpCallback: SocketCallback): Long {
         return synchronized(this.rpCallbackMap) {
             val token = atomicLong.incrementAndGet()
             this.rpCallbackMap[token] = rpCallback
@@ -19,7 +19,7 @@ internal object SocketAsyncInvocationRegistry {
         }
     }
 
-    fun getRPCallback(token: Long): SocketRPCallback? {
+    fun getRPCallback(token: Long): SocketCallback? {
         return synchronized(this.rpCallbackMap) {
             this.rpCallbackMap[token]
         }

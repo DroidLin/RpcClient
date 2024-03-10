@@ -2,20 +2,20 @@ package com.dst.rpc.android
 
 import com.dst.rpc.Client
 import com.dst.rpc.InitConfig
-import com.dst.rpc.RPCAddress
+import com.dst.rpc.Address
 
 /**
  * factory that accept address like ``` "android://[hostKey]:[port] ```
  */
 class AIDLClientFactory : Client.Factory {
 
-    override fun acceptAddress(address: RPCAddress): Boolean {
+    override fun acceptAddress(address: Address): Boolean {
         return address.scheme == "android"
     }
 
-    override fun addressCreate(value: String): RPCAddress? {
+    override fun addressCreate(value: String): Address? {
         return if (value.startsWith("android://")) {
-            AndroidRPCAddress(value)
+            AndroidAddress(value)
         } else null
     }
 

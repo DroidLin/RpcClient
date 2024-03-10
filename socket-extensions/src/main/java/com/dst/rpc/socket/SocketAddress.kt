@@ -1,13 +1,13 @@
 package com.dst.rpc.socket
 
-import com.dst.rpc.RPCAddress
+import com.dst.rpc.Address
 import java.net.URI
 
 /**
  * @author liuzhongao
  * @since 2024/3/6 23:33
  */
-internal class SocketRPCAddress(uri: URI) : RPCAddress {
+internal class SocketAddress(uri: URI) : Address {
 
     constructor(value: String) : this(URI.create(value))
 

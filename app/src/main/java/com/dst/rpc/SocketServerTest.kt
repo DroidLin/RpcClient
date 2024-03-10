@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
  * @author liuzhongao
  * @since 2024/3/7 17:26
  */
-internal val serverSocketAddress = RPCAddress("socket", "localhost", 2213)
+internal val serverSocketAddress = Address("socket", "localhost", 2213)
 
 fun main() = runBlocking {
     val initConfig = InitConfig.Builder()

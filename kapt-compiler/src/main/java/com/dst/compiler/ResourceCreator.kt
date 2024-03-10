@@ -1,7 +1,6 @@
 package com.dst.compiler
 
 import com.dst.rpc.ExceptionHandler
-import com.dst.rpc.RPCAddress
 import com.dst.rpc.StubFunction
 import com.dst.rpc.RPCInterfaceRegistry
 import com.dst.rpc.RPCollector
