@@ -48,20 +48,31 @@ object ClientManager {
     /**
      * add implementations of [clazz], which will be invoked in remote process call receiver.
      */
+    @JvmStatic
     fun <T : INoProguard> putService(clazz: Class<T>, impl: T) {
-        this.interfaceImplementationReference[clazz] = impl
+        synchronized(this.interfaceImplementationReference) {
+            this.interfaceImplementationReference[clazz] = impl
+        }
+        synchronized(this.interfaceStubFunctionCache) {
+            val factory = this.interfaceStubFactories[clazz]
+            this.interfaceStubFunctionCache[clazz] = factory?.invoke(impl) ?: StubFunction(impl)
+        }
     }
 
-    fun getStubService(clazz: Class<*>): StubFunction {
-        val rawService = this.interfaceImplementationReference[clazz]
-            ?: throw NullPointerException("no business impl for interface class: ${clazz.name} is available.")
+    @JvmStatic
+    @JvmOverloads
+    fun getService(clazz: Class<*>, performanceEnabled: Boolean = false): StubFunction {
+        val rawService = synchronized(this.interfaceImplementationReference) {
+            this.interfaceImplementationReference[clazz]
+        } ?: throw NullPointerException("no business impl for interface class: ${clazz.name} is available.")
 
         if (this.interfaceStubFunctionCache[clazz] == null) {
             synchronized(this.interfaceStubFunctionCache) {
                 if (this.interfaceStubFunctionCache[clazz] == null) {
-                    val factory = this.interfaceStubFactories[clazz]
-                    val stubFunction = factory?.invoke(rawService)
-                    this.interfaceStubFunctionCache[clazz] = stubFunction ?: StubFunction(rawServiceImpl = rawService)
+                    this.interfaceStubFunctionCache[clazz] = if (performanceEnabled) {
+                        val factory = this.interfaceStubFactories[clazz]
+                        factory?.invoke(rawService) ?: StubFunction(rawServiceImpl = rawService)
+                    } else StubFunction(rawServiceImpl = rawService)
                 }
             }
         }

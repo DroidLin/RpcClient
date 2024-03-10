@@ -60,9 +60,7 @@ internal object ResourceCreator {
         collectorWriter.flush()
         collectorWriter.close()
 
-        val resourceWriter = environment.filer.createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/services/${RPCollector::class.java.name}").apply {
-            println(this.toUri())
-        }.openWriter()
+        val resourceWriter = environment.filer.createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/services/${RPCollector::class.java.name}").openWriter()
         resourceWriter.appendLine("${packageName}.${generatedClassName}")
         resourceWriter.flush()
         resourceWriter.close()

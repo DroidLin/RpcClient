@@ -51,7 +51,7 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                         delay(this@AIDLClient.connectTimeout)
                         continuation.resumeWithException(exception = RuntimeException("fail to connection to remote: ${remoteAddress.value} after ${this@AIDLClient.connectTimeout}ms."))
                     }
-                    val localRPCorrelator = RPCorrelator(rpCorrelator = object : AndroidCallerCorrelator() {
+                    val localRPCorrelator = RPCorrelator(rpCorrelator = object : AndroidRPCorrelator {
                         override fun attachCorrelator(correlator: AndroidRPCorrelator) {
                             timeoutJob.cancel()
                             continuation.resume(AIDLConnection(correlator))
@@ -87,7 +87,9 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
         }
 
         internal fun twoWayConnectionEstablish(remoteRPCorrelator: AndroidRPCorrelator) {
-            val localRPCorrelator = object : AndroidCallerCorrelator() {}
+            val localRPCorrelator = object : AndroidRPCorrelator {
+                override fun attachCorrelator(correlator: AndroidRPCorrelator) {}
+            }
             remoteRPCorrelator.attachCorrelator(localRPCorrelator)
         }
     }

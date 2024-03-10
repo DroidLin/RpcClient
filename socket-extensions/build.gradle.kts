@@ -1,6 +1,7 @@
 plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
+    id("kotlin-kapt")
 }
 
 java {
@@ -12,4 +13,6 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     implementation(project(":core"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.2")
+    testImplementation(project(":core-annotation"))
+    kapt(project(":kapt-compiler"))
 }

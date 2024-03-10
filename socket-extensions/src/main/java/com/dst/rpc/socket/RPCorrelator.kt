@@ -134,22 +134,4 @@ private class SocketRPCorrelatorProxy(
 private class SocketRPCorrelatorStub : RPCorrelator {
 
     override val isOpen: Boolean get() = true
-
-    override fun callFunction(
-        functionOwner: Class<*>,
-        functionName: String,
-        functionUniqueKey: String,
-        argumentTypes: List<Class<*>>,
-        argumentValue: List<Any?>
-    ): Any? = ClientManager.getStubService(functionOwner as Class<INoProguard>)
-        .invokeNonSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
-
-    override suspend fun callSuspendFunction(
-        functionOwner: Class<*>,
-        functionName: String,
-        functionUniqueKey: String,
-        argumentTypes: List<Class<*>>,
-        argumentValue: List<Any?>
-    ): Any? = ClientManager.getStubService(functionOwner as Class<INoProguard>)
-        .invokeSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
 }

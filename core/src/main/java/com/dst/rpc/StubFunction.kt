@@ -1,6 +1,9 @@
 package com.dst.rpc
 
 /**
+ * generally uses to invoke functions in current process or function providers.
+ *
+ *
  * @author liuzhongao
  * @since 2024/3/8 01:44
  */
