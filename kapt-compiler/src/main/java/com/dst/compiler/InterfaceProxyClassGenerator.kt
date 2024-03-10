@@ -140,7 +140,7 @@ internal object InterfaceProxyClassGenerator {
                                 }
                                 .apply {
                                     append("\t\t\t\tkotlin.collections.CollectionsKt.listOf(")
-                                    val functionParameter = function.parameters
+                                    val functionParameter = function.parametersWithoutContinuation
                                     if (functionParameter.isNotEmpty()) {
                                         functionParameter.forEachIndexed { index, variableElement ->
                                             if (index != 0) {
@@ -151,7 +151,7 @@ internal object InterfaceProxyClassGenerator {
                                     }
                                     appendLine("),")
                                 }
-                                .appendLine("\t\t\t\tfalse,")
+                                .appendLine("\t\t\t\ttrue,")
                                 .appendLine("\t\t\t\t(kotlin.coroutines.Continuation<? super Object>) ${continuationParameter.simpleName}")
                                 .appendLine("\t\t\t);")
                         }

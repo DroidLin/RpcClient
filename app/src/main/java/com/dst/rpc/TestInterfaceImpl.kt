@@ -7,10 +7,10 @@ package com.dst.rpc
 class TestInterfaceImpl : TestInterface {
     override val name: String get() = "liuzhongao"
 
-    override fun getUserName(number: Int) {
+    override fun openUserName(number: Int) {
     }
 
-    override suspend fun suspendGetUsername(number: Int, string: String) {
+    override suspend fun suspendOpenUsername(number: Int, string: String) {
     }
 
     override suspend fun suspendGetUsername(number: Int): String {

@@ -15,7 +15,7 @@ interface RPCorrelator {
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? = ClientManager.getService(functionOwner as Class<INoProguard>)
-        .invokeNonSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
+        .invokeNonSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue).safeUnbox()
 
     suspend fun callSuspendFunction(
         functionOwner: Class<*>,
@@ -24,5 +24,5 @@ interface RPCorrelator {
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? = ClientManager.getService(functionOwner as Class<INoProguard>)
-        .invokeSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
+        .invokeSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue).safeUnbox()
 }

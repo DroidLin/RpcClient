@@ -1,7 +1,5 @@
 package com.dst.rpc.socket
 
-import java.lang.reflect.Method
-
 
 internal val Array<String>.stringTypeConvert: Array<Class<*>>
     get() = this.map { className -> className.stringTypeConvert }.toTypedArray()
@@ -21,18 +19,3 @@ internal val String.stringTypeConvert: Class<*>
         Char::class.java.name -> Char::class.java
         else -> Class.forName(this)
     }
-
-internal val defaultReturnType: List<Class<*>> = listOfNotNull(
-    Void::class.java,
-    Void::class.javaPrimitiveType,
-    Unit::class.java,
-    Unit::class.javaPrimitiveType
-)
-
-internal fun Any?.safeUnbox(): Any? {
-    this ?: return null
-    if (this.javaClass in defaultReturnType) {
-        return null
-    }
-    return this
-}

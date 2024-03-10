@@ -87,9 +87,9 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
         }
 
         internal fun twoWayConnectionEstablish(remoteRPCorrelator: AndroidRPCorrelator) {
-            val localRPCorrelator = object : AndroidRPCorrelator {
+            val localRPCorrelator = RPCorrelator(object : AndroidRPCorrelator {
                 override fun attachCorrelator(correlator: AndroidRPCorrelator) {}
-            }
+            })
             remoteRPCorrelator.attachCorrelator(localRPCorrelator)
         }
     }

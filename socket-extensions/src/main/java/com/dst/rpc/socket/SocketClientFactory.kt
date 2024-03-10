@@ -11,13 +11,11 @@ import com.dst.rpc.RPCAddress
 class SocketClientFactory : Client.Factory {
 
     override fun acceptAddress(address: RPCAddress): Boolean {
-        return address.scheme == "socket"
+        return acceptAddressInner(address)
     }
 
     override fun addressCreate(value: String): RPCAddress? {
-        return if (value.startsWith("socket://")) {
-            SocketRPCAddress(value = value)
-        } else null
+        return addressCreateInner(value)
     }
 
     override fun init(initConfig: InitConfig) {
@@ -27,4 +25,14 @@ class SocketClientFactory : Client.Factory {
     override fun newClient(initConfig: InitConfig): Client {
         return SocketClient(initConfig = initConfig)
     }
+}
+
+internal fun acceptAddressInner(address: RPCAddress): Boolean {
+    return address.scheme == "socket"
+}
+
+internal fun addressCreateInner(value: String): RPCAddress? {
+    return if (value.startsWith("socket://")) {
+        SocketRPCAddress(value = value)
+    } else null
 }

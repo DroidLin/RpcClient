@@ -45,6 +45,9 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
     }
 
     fun listenToRemoteCall() {
+        if (!acceptAddressInner(this.sourceAddress)) {
+            return
+        }
         this.coroutineScope.launch(block = this.runnable)
     }
 

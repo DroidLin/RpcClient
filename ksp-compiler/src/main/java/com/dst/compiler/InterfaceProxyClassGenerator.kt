@@ -232,7 +232,7 @@ internal object InterfaceProxyClassGenerator {
                             }
                             appendLine("),")
                         }
-                        .appendLine("\t\t\tisSuspended = true")
+                        .appendLine("\t\t\tisSuspended = $isSuspendFunction")
                     if (hasReturnValue && !functionReturnType.isMarkedNullable) {
                         appendLine("\t\t) as? ${buildType(functionReturnType)} ?: throw kotlin.IllegalArgumentException(\"function return type requires non-null type, but returns null type after IPC call and the fallback operation!! please check.\")")
                     } else {
@@ -266,7 +266,7 @@ internal object InterfaceProxyClassGenerator {
                             }
                             appendLine("),")
                         }
-                        .appendLine("\t\t\t\tisSuspended = false")
+                        .appendLine("\t\t\t\tisSuspended = $isSuspendFunction")
                     if (hasReturnValue && !functionReturnType.isMarkedNullable) {
                         appendLine("\t\t\t) as? ${buildType(functionReturnType)} ?: throw kotlin.IllegalArgumentException(\"function return type requires non-null type, but returns null type after IPC call and the fallback operation!! please check.\")")
                     } else {

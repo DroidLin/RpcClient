@@ -135,6 +135,6 @@ private class AndroidRPCorrelatorStub(private val rpCorrelator: AndroidRPCorrela
                 else -> null
             }
         }
-        AndroidParcelableInvocationResponse(data = result.getOrNull()?.safeUnbox(), throwable = result.exceptionOrNull())
+        AndroidParcelableInvocationResponse(data = result.getOrNull(), throwable = result.exceptionOrNull())
     }
 }

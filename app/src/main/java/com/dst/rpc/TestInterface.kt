@@ -11,9 +11,9 @@ interface TestInterface : INoProguard {
 
     val name: String
 
-    fun getUserName(number: Int)
+    fun openUserName(number: Int)
 
-    suspend fun suspendGetUsername(number: Int, string: String)
+    suspend fun suspendOpenUsername(number: Int, string: String)
 
     suspend fun suspendGetUsername(number: Int): String
 }
