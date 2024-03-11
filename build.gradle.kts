@@ -6,3 +6,8 @@ plugins {
     id("com.android.library") version "8.0.0" apply false
     id("com.google.devtools.ksp") version "1.9.0-1.0.13" apply false
 }
+
+allprojects {
+    group = "com.github.DroidLin"
+    version = "1.0.0"
+}
