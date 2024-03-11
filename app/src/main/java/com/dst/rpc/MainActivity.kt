@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.system.measureNanoTime
 
@@ -22,7 +21,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         findViewById<View>(R.id.get_name).setOnClickListener { v ->
-            lifecycleScope.launch(Dispatchers.Default) {
+            lifecycleScope.launch {
                 val countTime = measureNanoTime {
                     val name = this@MainActivity.testInterface.name
                     println(name)
@@ -31,7 +30,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         findViewById<View>(R.id.open_user_name).setOnClickListener { v ->
-            lifecycleScope.launch(Dispatchers.Default) {
+            lifecycleScope.launch {
                 val countTime = measureNanoTime {
                     val name = this@MainActivity.testInterface.openUserName(12331)
                     println(name)
@@ -40,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         findViewById<View>(R.id.suspend_open_user_name).setOnClickListener { v ->
-            lifecycleScope.launch(Dispatchers.Default) {
+            lifecycleScope.launch {
                 val countTime = measureNanoTime {
                     val name = this@MainActivity.testInterface.suspendGetUsername(222222)
                     println(name)
@@ -49,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         findViewById<View>(R.id.suspend_get_user_name).setOnClickListener { v ->
-            lifecycleScope.launch(Dispatchers.Default) {
+            lifecycleScope.launch {
                 val countTime = measureNanoTime {
                     val name = this@MainActivity.testInterface.suspendOpenUsername(1231, "2122")
                     println(name)
