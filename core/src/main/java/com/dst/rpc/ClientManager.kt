@@ -87,9 +87,9 @@ object ClientManager {
      */
     @JvmOverloads
     fun <T : INoProguard> serviceCreate(clazz: Class<*>, sourceAddress: Address, remoteAddress: Address, exceptionHandler: ExceptionHandler = ExceptionHandler): T {
-        val factory = this.interfaceProxyFactories[clazz]
-        if (factory != null) {
-            return factory.invoke(sourceAddress, remoteAddress, exceptionHandler) as T
+        val interfaceService = this.interfaceProxyFactories[clazz]?.invoke(sourceAddress, remoteAddress, exceptionHandler) as? T
+        if (interfaceService != null) {
+            return interfaceService
         }
 
         val connection = this.openConnection(sourceAddress, remoteAddress, exceptionHandler)

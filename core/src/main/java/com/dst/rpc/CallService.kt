@@ -14,7 +14,7 @@ interface CallService {
         functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
-    ): Any? = ClientManager.getService(functionOwner as Class<INoProguard>)
+    ): Any? = ClientManager.getService(functionOwner as Class<INoProguard>, functionUniqueKey.isNotEmpty())
         .invokeNonSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
 
     suspend fun callSuspendFunction(
@@ -23,7 +23,7 @@ interface CallService {
         functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
-    ): Any? = ClientManager.getService(functionOwner as Class<INoProguard>)
+    ): Any? = ClientManager.getService(functionOwner as Class<INoProguard>, functionUniqueKey.isNotEmpty())
         .invokeSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
 
     fun interface Callback {
