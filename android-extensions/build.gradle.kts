@@ -32,6 +32,12 @@ android {
     buildFeatures {
         aidl = true
     }
+    publishing {
+        singleVariant("release") {
+            withJavadocJar()
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
