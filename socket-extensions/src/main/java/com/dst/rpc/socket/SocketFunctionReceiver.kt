@@ -29,7 +29,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
     private val sourceAddress = initConfig.sourceAddress
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    private val rpCorrelator = RPCorrelator()
+    private val callService = CallService()
 
     private val runnable: (suspend CoroutineScope.() -> Unit) = {
         while (this.isActive) {
@@ -63,7 +63,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                 val argumentValue = requireNotNull(serializeReader.readList<Any?>())
 
                 val result: Result<Any?> = kotlin.runCatching {
-                    this.rpCorrelator.callFunction(
+                    this.callService.callFunction(
                         functionOwner = functionOwner,
                         functionName = functionName,
                         functionUniqueKey = functionUniqueKey,
@@ -96,7 +96,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                 val oneShotContinuation = OneShotContinuation(continuation)
 
                 val result = kotlin.runCatching {
-                    (this.rpCorrelator::callSuspendFunction as Function6<Class<*>, String, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
+                    (this.callService::callSuspendFunction as Function6<Class<*>, String, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
                         .invoke(functionOwner, functionName, functionUniqueKey, argumentType, argumentValue, oneShotContinuation)
                 }
                 val byteArray = SerializeWriter().also { serializeWriter ->

@@ -8,17 +8,17 @@ import kotlin.coroutines.Continuation
 /**
  * android based connection, using aidl component.
  *
- * while launch remote calls, we assume [rpCorrelator] is always alive.
+ * while launch remote calls, we assume [callService] is always alive.
  * will not handle any exceptions through remote calls.
  *
  * @author liuzhongao
  * @since 2024/3/4 11:13
  */
 internal class AIDLConnection(
-    private val rpCorrelator: AndroidCallService
+    private val callService: AndroidCallService
 ) : Connection {
 
-    override val isClosed: Boolean get() = !this.rpCorrelator.isOpen
+    override val isClosed: Boolean get() = !this.callService.isOpen
 
     private val suspendMutex: Mutex = Mutex()
 
@@ -32,7 +32,7 @@ internal class AIDLConnection(
     ): Any? {
         return this.suspendMutex.withLock {
             if (isSuspended) {
-                this.rpCorrelator.callSuspendFunction(
+                this.callService.callSuspendFunction(
                     functionOwner = functionOwner,
                     functionName = functionName,
                     functionUniqueKey = functionUniqueKey,
@@ -40,7 +40,7 @@ internal class AIDLConnection(
                     argumentValue = functionParameterValues.filter { it !is Continuation<*> }
                 )
             } else {
-                this.rpCorrelator.callFunction(
+                this.callService.callFunction(
                     functionOwner = functionOwner,
                     functionName = functionName,
                     functionUniqueKey = functionUniqueKey,

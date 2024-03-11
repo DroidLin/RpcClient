@@ -16,13 +16,13 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-internal fun RPCorrelator(
+internal fun CallService(
     sourceAddress: Address,
     remoteAddress: Address,
     connectionTimeout: Long
 ): CallService = SocketCallServiceProxy(sourceAddress, remoteAddress, connectionTimeout)
 
-internal fun RPCorrelator() : CallService = SocketCallServiceStub()
+internal fun CallService() : CallService = SocketCallServiceStub()
 
 private class SocketCallServiceProxy(
     private val sourceAddress: Address,

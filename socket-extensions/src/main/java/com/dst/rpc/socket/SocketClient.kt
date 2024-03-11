@@ -21,8 +21,8 @@ internal class SocketClient(initConfig: InitConfig) : Client {
         remoteAddress: Address,
         exceptionHandler: ExceptionHandler
     ): Connection {
-        val rpCorrelator = RPCorrelator(sourceAddress, remoteAddress, this.connectionTimeout)
-        val rawConnection = SocketConnection(rpCorrelator)
+        val callService = CallService(sourceAddress, remoteAddress, this.connectionTimeout)
+        val rawConnection = SocketConnection(callService)
         return ExceptionHandleConnection(
             exceptionHandler = exceptionHandler + this.rootExceptionHandler,
             rawConnectionProvider = { rawConnection }
