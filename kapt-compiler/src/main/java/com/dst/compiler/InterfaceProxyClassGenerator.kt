@@ -121,7 +121,7 @@ internal object InterfaceProxyClassGenerator {
                             } else appendLine("\t\t\t${newClassName}.this.connection.call(")
                             appendLine("\t\t\t\t${rootElement.qualifiedName}.class,")
                                 .appendLine("\t\t\t\t\"${function.simpleName}\",")
-                                .appendLine("\t\t\t\t\t\t\"${buildFunctionUniqueKey(function)}\",")
+                                .appendLine("\t\t\t\t\"${buildFunctionUniqueKey(function)}\",")
                                 .apply {
                                     append("\t\t\t\tkotlin.collections.CollectionsKt.listOf(")
                                     val functionParameter = function.parametersWithoutContinuation
