@@ -7,6 +7,3 @@ package com.dst.rpc
 
 val mainProcessAddress = ClientManager.addressCreate("android://com.dst.rpc.main")
 val libraryProcessAddress = ClientManager.addressCreate("android://com.dst.rpc.library")
-
-val mainSocketAddress = ClientManager.addressCreate("socket://localhost:12312")
-val librarySocketAddress = ClientManager.addressCreate("socket://localhost:12313")

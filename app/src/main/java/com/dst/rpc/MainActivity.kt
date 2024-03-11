@@ -5,15 +5,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlin.system.measureNanoTime
 
 class MainActivity : AppCompatActivity() {
 
-    private val testInterface: TestInterface = ClientManager.serviceCreate(TestInterface::class.java, mainSocketAddress, librarySocketAddress)
+    private val testInterface: TestInterface = ClientManager.serviceCreate(TestInterface::class.java, mainProcessAddress, libraryProcessAddress)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -3,6 +3,7 @@ package com.dst.rpc.socket
 import com.dst.rpc.InitConfig
 import com.dst.rpc.OneShotContinuation
 import com.dst.rpc.Address
+import com.dst.rpc.safeUnbox
 import com.dst.rpc.socket.serializer.KEY_FUNCTION_SUSPEND_CALLBACK
 import com.dst.rpc.socket.serializer.KEY_FUNCTION_TYPE_NON_SUSPEND
 import com.dst.rpc.socket.serializer.KEY_FUNCTION_TYPE_SUSPEND
@@ -71,7 +72,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                     )
                 }
                 val byteArray = SerializeWriter().also { serializeWriter ->
-                    serializeWriter.writeValue(result.getOrNull())
+                    serializeWriter.writeValue(result.getOrNull().safeUnbox())
                     serializeWriter.writeValue(result.exceptionOrNull())
                     serializeWriter.close()
                 }.toByteArray()
@@ -90,7 +91,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
 
                 val socketRPCallback = SocketCallback(socketAddress, token)
                 val continuation = Continuation<Any?>(EmptyCoroutineContext) { result ->
-                    kotlin.runCatching { socketRPCallback.callback(result.getOrNull(), result.exceptionOrNull()) }
+                    kotlin.runCatching { socketRPCallback.callback(result.getOrNull().safeUnbox(), result.exceptionOrNull()) }
                 }
                 val oneShotContinuation = OneShotContinuation(continuation)
 
@@ -99,7 +100,7 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                         .invoke(functionOwner, functionName, functionUniqueKey, argumentType, argumentValue, oneShotContinuation)
                 }
                 val byteArray = SerializeWriter().also { serializeWriter ->
-                    serializeWriter.writeValue(result.getOrNull())
+                    serializeWriter.writeValue(result.getOrNull().safeUnbox())
                     serializeWriter.writeValue(result.exceptionOrNull())
                     serializeWriter.close()
                 }.toByteArray()

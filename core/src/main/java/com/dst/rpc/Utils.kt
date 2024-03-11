@@ -19,7 +19,7 @@ internal val defaultReturnType: List<Class<*>> = listOfNotNull(
     Unit::class.javaPrimitiveType
 )
 
-internal fun Any?.safeUnbox(): Any? {
+fun Any?.safeUnbox(): Any? {
     this ?: return null
     if (this.javaClass in defaultReturnType) {
         return null

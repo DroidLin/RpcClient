@@ -53,13 +53,13 @@ internal object ResourceCreator {
             .appendLine("\tpublic void collect(@NotNull RPCInterfaceRegistry registry) {")
             .apply {
                 interfaceAnnotatedElements.forEachIndexed { index, typeElement ->
-                    appendLine("\t\tregistry.putServiceProxyLazy(${typeElement.qualifiedName}.class, (Function3<Address, Address, ExceptionHandler, ${typeElement.qualifiedName}>) (sourceAddress, remoteAddress, exceptionHandler) -> { return new ${typeElement.qualifiedName}_Generated_Proxy(sourceAddress, remoteAddress, exceptionHandler); });")
+                    appendLine("\t\tregistry.putServiceProxyLazy(${typeElement.qualifiedName}.class, (Function3<Address, Address, ExceptionHandler, ${typeElement.qualifiedName}>) (sourceAddress, remoteAddress, exceptionHandler) -> new ${typeElement.qualifiedName}_Generated_Proxy(sourceAddress, remoteAddress, exceptionHandler));")
                 }
                 interfaceAnnotatedElements.forEachIndexed { index, typeElement ->
                     if (index == 0) {
                         appendLine()
                     }
-                    appendLine("\t\tregistry.putServiceStubLazy(${typeElement.qualifiedName}.class, (Function1<${typeElement.qualifiedName}, StubFunction>) impl -> { return new ${typeElement.qualifiedName}_Generated_Stub(impl); });")
+                    appendLine("\t\tregistry.putServiceStubLazy(${typeElement.qualifiedName}.class, (Function1<${typeElement.qualifiedName}, StubFunction>) impl -> new ${typeElement.qualifiedName}_Generated_Stub(impl));")
                 }
                 interfaceImplementationElements.forEachIndexed { index, typeElement ->
                     if (index == 0) {

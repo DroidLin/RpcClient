@@ -7,7 +7,6 @@ import com.dst.rpc.android.EstablishStrategy
 import com.dst.rpc.android.androidContext
 import com.dst.rpc.android.coroutineContext
 import com.dst.rpc.android.strategy
-import com.dst.rpc.socket.sourceAddress
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
@@ -31,7 +30,6 @@ class AppApplication : Application() {
         val initConfig = InitConfig.Builder()
             .strategy(EstablishStrategy.BroadcastReceiver)
             .androidContext(this)
-            .sourceAddress(mainSocketAddress)
             .coroutineContext(EmptyCoroutineContext)
             .build()
         ClientManager.init(initConfig)
@@ -41,7 +39,6 @@ class AppApplication : Application() {
         val initConfig = InitConfig.Builder()
             .strategy(EstablishStrategy.BroadcastReceiver)
             .androidContext(this)
-            .sourceAddress(librarySocketAddress)
             .coroutineContext(EmptyCoroutineContext)
             .build()
         ClientManager.init(initConfig)

@@ -7,7 +7,7 @@ import com.dst.rpc.CallService
  * @author liuzhongao
  * @since 2024/3/3 16:22
  */
-interface AndroidCallService : CallService {
+internal interface AndroidCallService : CallService {
 
     fun attachCallService(callService: AndroidCallService)
 }

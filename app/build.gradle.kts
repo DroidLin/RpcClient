@@ -59,7 +59,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":core-annotation"))
     implementation(project(":android-extensions"))
-    implementation(project(":socket-extensions"))
+//    implementation(project(":socket-extensions"))
     kapt(project(":kapt-compiler"))
 //    ksp(project(":ksp-compiler"))
 }

@@ -4,6 +4,7 @@ import com.dst.rpc.OneShotContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
+import com.dst.rpc.safeUnbox
 
 internal fun AndroidCallService(callService: AndroidCallService): AndroidCallService = AndroidCallServiceStub(callService)
 
@@ -34,6 +35,6 @@ internal class AndroidCallServiceStub(private val callService: AndroidCallServic
                 else -> null
             }
         }
-        AndroidParcelableInvocationResponse(data = result.getOrNull(), throwable = result.exceptionOrNull())
+        AndroidParcelableInvocationResponse(data = result.getOrNull().safeUnbox(), throwable = result.exceptionOrNull())
     }
 }
