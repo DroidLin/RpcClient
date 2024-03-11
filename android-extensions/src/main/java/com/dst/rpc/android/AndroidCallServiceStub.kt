@@ -30,7 +30,7 @@ internal class AndroidCallServiceStub(private val callService: AndroidCallServic
                     (this::callSuspendFunction as Function6<Class<*>, String, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)
                         .invoke(aidlRequest.className.stringTypeConvert, aidlRequest.functionName, aidlRequest.functionUniqueKey, aidlRequest.classTypesOfFunctionParameter.stringTypeConvert, aidlRequest.valuesOfFunctionParameter, oneShotContinuation)
                 }
-                is AttachReCorrelatorRequest -> this.attachCallService(callService = aidlRequest.rpCorrelator)
+                is AttachAndroidCallServiceRequest -> this.attachCallService(callService = aidlRequest.callService)
                 else -> null
             }
         }

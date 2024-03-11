@@ -124,12 +124,12 @@ internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? 
 
 }
 
-internal data class AttachReCorrelatorRequest(
-    val rpCorrelator: AndroidCallService
+internal data class AttachAndroidCallServiceRequest(
+    val callService: AndroidCallService
 ) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
-        rpCorrelator = AndroidCallService(
+        callService = AndroidCallService(
             function = AIDLFunction(
                 function = Function.Stub.asInterface(
                     requireNotNull(
@@ -141,21 +141,21 @@ internal data class AttachReCorrelatorRequest(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeStrongBinder(this.rpCorrelator.iBinder)
+        parcel.writeStrongBinder(this.callService.iBinder)
     }
 
     override fun describeContents(): Int {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<AttachReCorrelatorRequest> {
+    companion object CREATOR : Parcelable.Creator<AttachAndroidCallServiceRequest> {
         private const val serialVersionUID: Long = -3271507829792609368L
 
-        override fun createFromParcel(parcel: Parcel): AttachReCorrelatorRequest {
-            return AttachReCorrelatorRequest(parcel)
+        override fun createFromParcel(parcel: Parcel): AttachAndroidCallServiceRequest {
+            return AttachAndroidCallServiceRequest(parcel)
         }
 
-        override fun newArray(size: Int): Array<AttachReCorrelatorRequest?> {
+        override fun newArray(size: Int): Array<AttachAndroidCallServiceRequest?> {
             return arrayOfNulls(size)
         }
     }

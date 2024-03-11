@@ -45,7 +45,7 @@ class AppApplication : Application() {
             .coroutineContext(EmptyCoroutineContext)
             .build()
         ClientManager.init(initConfig)
-        ClientManager.putService(TestInterface::class.java, TestInterfaceImpl())
+//        ClientManager.putService(TestInterface::class.java, TestInterfaceImpl())
     }
 
     private fun Context.getCurrentProcessName(): String {

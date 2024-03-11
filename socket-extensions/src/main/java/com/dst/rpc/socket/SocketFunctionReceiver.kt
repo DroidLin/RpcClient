@@ -111,8 +111,8 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                 val token = serializeReader.readLong()
                 val data = serializeReader.readValue<Any?>()
                 val throwable = serializeReader.readValue<Throwable?>()
-                SocketAsyncInvocationRegistry.getRPCallback(token)?.callback(data, throwable)
-                SocketAsyncInvocationRegistry.removeRPCallback(token)
+                SocketAsyncCallbackRegistry.getCallback(token)?.callback(data, throwable)
+                SocketAsyncCallbackRegistry.removeCallback(token)
             }
         }
     }

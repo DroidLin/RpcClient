@@ -1,6 +1,7 @@
 package com.dst.compiler
 
 import com.dst.rpc.StubFunction
+import com.dst.rpc.annotations.RPCImplementation
 import com.dst.rpc.annotations.RPCInterface
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -49,7 +50,8 @@ class InterProcessSymbolProcessProvider : SymbolProcessorProvider {
                             generatedStubClassDeclaration = generatedStubClassDeclaration
                         )
                     }
-                    ResourceCreator.resourceCreate(environment.codeGenerator, classDeclarations)
+                    val implementationClassDeclarations = findKSClassDeclaration(resolver, RPCImplementation::class.java)
+                    ResourceCreator.resourceCreate(environment.logger, environment.codeGenerator, classDeclarations, implementationClassDeclarations)
                 }
                 return emptyList()
             }

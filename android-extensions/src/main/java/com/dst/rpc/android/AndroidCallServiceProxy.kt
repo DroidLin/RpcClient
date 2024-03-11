@@ -13,7 +13,7 @@ internal class AndroidCallServiceProxy(val aidlFunction: AIDLFunction) : Android
     override val isOpen: Boolean get() = aidlFunction.isAlive
 
     override fun attachCallService(callService: AndroidCallService) {
-        val request = AttachReCorrelatorRequest(callService)
+        val request = AttachAndroidCallServiceRequest(callService)
         this.aidlFunction.invoke(request = request)
     }
 

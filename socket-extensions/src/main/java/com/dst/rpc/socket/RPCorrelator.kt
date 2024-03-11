@@ -85,12 +85,12 @@ private class SocketCallServiceProxy(
             }
             val callback = SocketCallback { asyncData, asyncThrowable ->
                 timeoutWaitingTask.cancel()
-                SocketAsyncInvocationRegistry.removeRPCallback(token)
+                SocketAsyncCallbackRegistry.removeCallback(token)
                 if (asyncThrowable != null) {
                     oneShotContinuation.resumeWithException(asyncThrowable)
                 } else oneShotContinuation.resume(asyncData)
             }
-            token = SocketAsyncInvocationRegistry.addRPCallback(callback)
+            token = SocketAsyncCallbackRegistry.addCallback(callback)
             val byteArray = SerializeWriter().also { serializeWriter ->
                 serializeWriter.writeString(KEY_FUNCTION_TYPE_SUSPEND)
                 serializeWriter.writeString(functionOwner.name)
@@ -115,7 +115,7 @@ private class SocketCallServiceProxy(
                 throw throwable
             }
             if (data != COROUTINE_SUSPENDED) {
-                SocketAsyncInvocationRegistry.removeRPCallback(token)
+                SocketAsyncCallbackRegistry.removeCallback(token)
             }
             data
         }

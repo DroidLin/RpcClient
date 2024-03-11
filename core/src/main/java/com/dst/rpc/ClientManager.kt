@@ -137,7 +137,7 @@ object ClientManager {
                             this@ClientManager.putService(clazz, impl)
                         }
                     }
-                    ServiceLoader.load(RPCollector::class.java).forEach { it.collect(registry) }
+                    ServiceLoader.load(Collector::class.java).forEach { it.collect(registry) }
                 }
             }
         }
