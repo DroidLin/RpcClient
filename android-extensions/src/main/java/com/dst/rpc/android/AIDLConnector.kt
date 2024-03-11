@@ -28,11 +28,11 @@ internal interface AIDLConnector {
 }
 
 private object AndroidServiceConnector : AIDLConnector {
-    override fun attach(androidContext: Context, AIDLContext: AIDLContext) {
+    override fun attach(androidContext: Context, aidlContext: AIDLContext) {
         val broadcastIntent = Intent()
-        broadcastIntent.rpcContext = AIDLContext
+        broadcastIntent.rpcContext = aidlContext
         broadcastIntent.`package` = androidContext.packageName
-        broadcastIntent.component = ComponentName(androidContext.packageName, AIDLContext.remoteServiceName)
+        broadcastIntent.component = ComponentName(androidContext.packageName, aidlContext.remoteServiceName)
         androidContext.startService(broadcastIntent)
     }
 }
@@ -41,17 +41,17 @@ private object AndroidContentProviderConnector : AIDLConnector {
 
     private const val METHOD = "connection"
 
-    override fun attach(androidContext: Context, AIDLContext: AIDLContext) {
+    override fun attach(androidContext: Context, aidlContext: AIDLContext) {
         val bundle = Bundle()
-        bundle.rpcContext = AIDLContext
-        androidContext.contentResolver.call(AIDLContext.remoteAddress.uri, METHOD, null, bundle)
+        bundle.rpcContext = aidlContext
+        androidContext.contentResolver.call(aidlContext.remoteAddress.uri, METHOD, null, bundle)
     }
 }
 
 private object AndroidBroadcastReceiverConnector : AIDLConnector {
-    override fun attach(androidContext: Context, AIDLContext: AIDLContext) {
-        val broadcastIntent = Intent(AIDLContext.remoteAddress.value)
-        broadcastIntent.rpcContext = AIDLContext
+    override fun attach(androidContext: Context, aidlContext: AIDLContext) {
+        val broadcastIntent = Intent(aidlContext.remoteAddress.value)
+        broadcastIntent.rpcContext = aidlContext
         broadcastIntent.`package` = androidContext.packageName
         androidContext.sendBroadcast(broadcastIntent)
     }
