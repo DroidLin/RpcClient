@@ -91,7 +91,7 @@ internal object InterfaceStubClassGenerator {
                 val nonSuspendMemberDeclaration = (interfaceClassDeclaration.getDeclaredProperties() +
                         interfaceClassDeclaration.getDeclaredFunctions().filter { !it.modifiers.contains(Modifier.SUSPEND) }).toList()
                 if (nonSuspendMemberDeclaration.isNotEmpty()) {
-                    appendLine("\t\treturn when (functionName) {")
+                    appendLine("\t\treturn when (functionUniqueKey) {")
                     nonSuspendMemberDeclaration.forEach { ksDeclaration ->
                         when (ksDeclaration) {
                             is KSPropertyDeclaration -> {
@@ -112,7 +112,7 @@ internal object InterfaceStubClassGenerator {
             .apply {
                 val suspendFunctionDeclarations = interfaceClassDeclaration.getDeclaredFunctions().filter { it.modifiers.contains(Modifier.SUSPEND) }.toList()
                 if (suspendFunctionDeclarations.isNotEmpty()) {
-                    appendLine("\t\treturn when (functionName) {")
+                    appendLine("\t\treturn when (functionUniqueKey) {")
                     interfaceClassDeclaration.getDeclaredFunctions().filter { it.modifiers.contains(Modifier.SUSPEND) }
                         .forEach { ksFunctionDeclaration ->
                             appendLine("\t\t\t\"${buildFunctionUniqueKey(ksFunctionDeclaration)}\" -> ${buildFunctionInvocationCode(ksFunctionDeclaration)}")
