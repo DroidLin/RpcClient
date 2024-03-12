@@ -15,6 +15,7 @@ private const val KEY_CONNECTION_STRATEGY = "key_connection_strategy"
 private const val KEY_ANDROID_CONTEXT = "key_android_context"
 private const val KEY_REMOTE_ANDROID_SERVICE_COMPONENT_CLASS = "key_remote_android_service_component_class"
 private const val KEY_COROUTINE_CONTEXT = "key_coroutine_context"
+private const val KEY_PRE_ATTACH_CALLBACK = "key_pre_attach_callback"
 
 val InitConfig.strategy: EstablishStrategy
     get() = requireNotNull(this.extraParameters[KEY_CONNECTION_STRATEGY] as? EstablishStrategy)
@@ -43,3 +44,9 @@ val InitConfig.coroutineContext: CoroutineContext
 
 fun InitConfig.Builder.coroutineContext(coroutineContext: CoroutineContext) =
     this.putExtra(KEY_COROUTINE_CONTEXT, coroutineContext)
+
+val InitConfig.preAttachCallback: OnPreAttachCallback?
+    get() = this.extraParameters[KEY_PRE_ATTACH_CALLBACK] as? OnPreAttachCallback
+
+fun InitConfig.Builder.preAttachCallback(preAttachCallback: OnPreAttachCallback) =
+    this.putExtra(KEY_PRE_ATTACH_CALLBACK, preAttachCallback)

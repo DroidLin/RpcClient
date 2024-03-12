@@ -17,6 +17,7 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
     private val strategy: EstablishStrategy = initConfig.strategy
     private val remoteAndroidServiceClass: Class<out Service>? = initConfig.remoteAndroidServiceClass
     private val androidContext: Context = initConfig.androidContext
+    private val preAttachCallback: OnPreAttachCallback? = initConfig.preAttachCallback
 
     override fun openConnection(
         sourceAddress: Address,
@@ -63,7 +64,7 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                         remoteAddress = AndroidAddress(remoteAddress),
                         callService = localCallService
                     )
-                    AIDLConnector.attach(strategy = this@AIDLClient.strategy, AIDLContext = aidlContext, androidContext = this@AIDLClient.androidContext)
+                    AIDLConnector.attach(this@AIDLClient.strategy, aidlContext, androidContext)
                 }
             }
         }
