@@ -104,3 +104,9 @@ fun buildType(ksType: KSType, nullableEnabled: Boolean = true): String {
         }
         .toString()
 }
+
+fun buildTypeWithoutParameterizedTypes(ksType: KSType): String {
+    return StringBuilder()
+        .append(requireNotNull(ksType.declaration.qualifiedName).asString())
+        .toString()
+}

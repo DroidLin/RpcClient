@@ -9,6 +9,8 @@ import com.dst.rpc.annotations.RPCInterface
 @RPCInterface
 interface TestInterfaceV2 : INoProguard {
 
+    val name: String get() = ""
+
     val String.name: String
 
     fun Int.getUserName(number: Int)

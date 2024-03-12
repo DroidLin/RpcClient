@@ -161,7 +161,7 @@ internal object InterfaceStubClassGenerator {
             if (isExtensionReceiverNullable) {
                 stringBuilder.append(" as? ")
             } else stringBuilder.append(" as ")
-                .append(buildType(receiverType))
+            stringBuilder.append(buildType(receiverType))
                 .append(")")
                 .append(".")
                 .append(ksFunctionDeclaration.simpleName.asString())

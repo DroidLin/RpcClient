@@ -145,8 +145,22 @@ internal object InterfaceProxyClassGenerator {
             .appendLine("\t\t\t\t\tfunctionOwner = ${interfaceClassDeclaration.qualifiedName?.asString()}::class.java,")
             .appendLine("\t\t\t\t\tfunctionName = \"${propertyDeclaration.simpleName.asString()}\",")
             .appendLine("\t\t\t\t\tfunctionUniqueKey = \"${buildPropertyUniqueKey(propertyDeclaration)}\",")
-            .appendLine("\t\t\t\t\tfunctionParameterTypes = kotlin.collections.listOf(),")
-            .appendLine("\t\t\t\t\tfunctionParameterValues = kotlin.collections.listOf(),")
+            .apply {
+                append("\t\t\t\t\tfunctionParameterTypes = kotlin.collections.listOf(")
+                val propertyReceiver = propertyDeclaration.extensionReceiver
+                if (propertyReceiver != null) {
+                    append("${buildTypeWithoutParameterizedTypes(propertyReceiver.resolve())}::class.java")
+                }
+                appendLine("),")
+            }
+            .apply {
+                append("\t\t\t\t\tfunctionParameterValues = kotlin.collections.listOf(")
+                val propertyReceiver = propertyDeclaration.extensionReceiver
+                if (propertyReceiver != null) {
+                    append("this@${propertyDeclaration.simpleName.asString()}")
+                }
+                appendLine("),")
+            }
             .appendLine("\t\t\t\t\tisSuspended = false")
             .appendLine("\t\t\t\t) as? ${buildType(propertyType)}")
             .append("\t\t\t}")
@@ -215,16 +229,24 @@ internal object InterfaceProxyClassGenerator {
                         .appendLine("\t\t\tfunctionUniqueKey = \"${buildFunctionUniqueKey(functionDeclaration)}\",")
                         .apply {
                             append("\t\t\tfunctionParameterTypes = kotlin.collections.listOf(")
+                            val receiverType = functionDeclaration.extensionReceiver?.resolve()
+                            if (receiverType != null) {
+                                append("${buildTypeWithoutParameterizedTypes(receiverType)}::class.java").append(", ")
+                            }
                             functionDeclaration.parameters.forEachIndexed { index, ksValueParameter ->
                                 if (index != 0) {
                                     append(", ")
                                 }
-                                append("${buildType(ksValueParameter.type.resolve())}::class.java")
+                                append("${buildTypeWithoutParameterizedTypes(ksValueParameter.type.resolve())}::class.java")
                             }
                             appendLine("),")
                         }
                         .apply {
                             append("\t\t\tfunctionParameterValues = kotlin.collections.listOf(")
+                            val receiverReference = functionDeclaration.extensionReceiver
+                            if (receiverReference != null) {
+                                append("this@${functionDeclaration.simpleName.asString()}").append(", ")
+                            }
                             functionDeclaration.parameters.forEachIndexed { index, ksValueParameter ->
                                 if (index != 0) {
                                     append(", ")
@@ -236,6 +258,8 @@ internal object InterfaceProxyClassGenerator {
                         .appendLine("\t\t\tisSuspended = $isSuspendFunction")
                     if (hasReturnValue && !functionReturnType.isMarkedNullable) {
                         appendLine("\t\t) as? ${buildType(functionReturnType)} ?: throw kotlin.IllegalArgumentException(\"function return type requires non-null type, but returns null type after IPC call and the fallback operation!! please check.\")")
+                    } else if (hasReturnValue) {
+                        appendLine("\t\t) as? ${buildType(functionReturnType)}")
                     } else {
                         appendLine("\t\t)")
                     }
@@ -249,6 +273,10 @@ internal object InterfaceProxyClassGenerator {
                         .appendLine("\t\t\t\tfunctionUniqueKey = \"${buildFunctionUniqueKey(functionDeclaration)}\",")
                         .apply {
                             append("\t\t\t\tfunctionParameterTypes = kotlin.collections.listOf(")
+                            val receiverType = functionDeclaration.extensionReceiver?.resolve()
+                            if (receiverType != null) {
+                                append("${buildTypeWithoutParameterizedTypes(receiverType)}::class.java").append(", ")
+                            }
                             functionDeclaration.parameters.forEachIndexed { index, ksValueParameter ->
                                 if (index != 0) {
                                     append(", ")
@@ -259,6 +287,10 @@ internal object InterfaceProxyClassGenerator {
                         }
                         .apply {
                             append("\t\t\t\tfunctionParameterValues = kotlin.collections.listOf(")
+                            val receiverReference = functionDeclaration.extensionReceiver
+                            if (receiverReference != null) {
+                                append("this@${functionDeclaration.simpleName.asString()}").append(", ")
+                            }
                             functionDeclaration.parameters.forEachIndexed { index, ksValueParameter ->
                                 if (index != 0) {
                                     append(", ")
