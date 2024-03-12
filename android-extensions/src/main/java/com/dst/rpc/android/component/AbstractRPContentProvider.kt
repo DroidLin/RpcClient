@@ -29,9 +29,9 @@ abstract class AbstractRPContentProvider : ContentProvider() {
         }
         val rpContext = extras?.rpcContext ?: return null
         if (this.addressOfCurrentProvider == rpContext.remoteAddress) {
-            this.onReceiveRPConnection(context = rpContext)
             AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.callService)))
             AIDLClient.twoWayConnectionEstablish(rpContext.callService)
+            this.onReceiveRPConnection(context = rpContext)
         }
         return null
     }

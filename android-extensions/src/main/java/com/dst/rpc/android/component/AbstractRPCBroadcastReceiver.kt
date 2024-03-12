@@ -22,9 +22,9 @@ abstract class AbstractRPCBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         val rpContext = intent?.rpcContext ?: return
         if (this.addressOfCurrentReceiver == rpContext.remoteAddress) {
-            this.onReceiveRPConnection(context = rpContext)
             AIDLClient.acceptConnection(rpContext.sourceAddress, CompletableDeferred(AIDLConnection(rpContext.callService)))
             AIDLClient.twoWayConnectionEstablish(rpContext.callService)
+            this.onReceiveRPConnection(context = rpContext)
         }
     }
 }
