@@ -25,7 +25,7 @@ internal class AndroidCallServiceStub(private val callService: AndroidCallServic
                 is AndroidSuspendInvocationRequest -> {
                     val continuation = object : Continuation<Any?> {
                         override val context: CoroutineContext get() = Dispatchers.Default
-                        override fun resumeWith(result: Result<Any?>) = aidlRequest.AIDLCallback.callback(result.getOrNull(), result.exceptionOrNull())
+                        override fun resumeWith(result: Result<Any?>) = aidlRequest.aidlCallback.callback(result.getOrNull(), result.exceptionOrNull())
                     }
                     val oneShotContinuation = OneShotContinuation(continuation)
                     (this::callSuspendFunction as Function6<Class<*>, String, String, List<Class<*>>, List<Any?>, Continuation<Any?>, Any?>)

@@ -35,6 +35,6 @@
         android:id="@+id/suspend_get_user_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="suspend open user name" />
+        android:text="suspend get user name" />
 
 </LinearLayout>
