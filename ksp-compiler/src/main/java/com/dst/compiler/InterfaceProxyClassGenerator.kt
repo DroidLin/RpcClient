@@ -281,7 +281,7 @@ internal object InterfaceProxyClassGenerator {
                                 if (index != 0) {
                                     append(", ")
                                 }
-                                append("${buildType(ksValueParameter.type.resolve())}::class.java")
+                                append("${buildTypeWithoutParameterizedTypes(ksValueParameter.type.resolve())}::class.java")
                             }
                             appendLine("),")
                         }
