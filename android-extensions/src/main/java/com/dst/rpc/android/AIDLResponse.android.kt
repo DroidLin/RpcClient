@@ -3,6 +3,7 @@ package com.dst.rpc.android
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import com.dst.rpc.safeUnbox
 
 internal data class AndroidParcelableInvocationResponse(
     override val data: Any?,
@@ -17,7 +18,7 @@ internal data class AndroidParcelableInvocationResponse(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeValue(this.data)
+        parcel.writeValue(this.data.safeUnbox())
         parcel.writeSerializable(this.throwable)
     }
 

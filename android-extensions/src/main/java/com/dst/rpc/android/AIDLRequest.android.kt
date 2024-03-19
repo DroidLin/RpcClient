@@ -2,6 +2,7 @@ package com.dst.rpc.android
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.dst.rpc.safeUnbox
 
 internal data class AndroidInvocationRequest(
     val className: String,
@@ -102,7 +103,7 @@ internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? 
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeValue(this.data)
+        parcel.writeValue(this.data.safeUnbox())
         parcel.writeSerializable(this.throwable)
     }
 
