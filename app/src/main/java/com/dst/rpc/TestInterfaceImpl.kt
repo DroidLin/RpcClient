@@ -1,6 +1,8 @@
 package com.dst.rpc
 
 import com.dst.rpc.annotations.RPCImplementation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * @author liuzhongao
@@ -21,6 +23,8 @@ class TestInterfaceImpl : TestInterface {
     }
 
     override suspend fun suspendGetUsername(number: Int): String {
-        return "liuzhongao$number"
+        return withContext(Dispatchers.IO) {
+            "liuzhongao$number"
+        }
     }
 }

@@ -69,7 +69,7 @@ internal class AndroidCallServiceProxy(val aidlFunction: AIDLFunction) : Android
             functionUniqueKey = functionUniqueKey,
             classTypesOfFunctionParameter = argumentTypes.map { it.name },
             valuesOfFunctionParameter = argumentValue,
-            AIDLCallback = rpCallback
+            aidlCallback = rpCallback
         )
         this.aidlFunction.addDeathListener(deathListener)
         return@suspendCoroutineUninterceptedOrReturn when (val result = this.aidlFunction.invoke(request)) {

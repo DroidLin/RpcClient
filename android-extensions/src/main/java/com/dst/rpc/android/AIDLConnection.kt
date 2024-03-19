@@ -20,8 +20,6 @@ internal class AIDLConnection(
 
     override val isClosed: Boolean get() = !this.callService.isOpen
 
-    private val suspendMutex: Mutex = Mutex()
-
     override suspend fun call(
         functionOwner: Class<*>,
         functionName: String,
@@ -30,24 +28,22 @@ internal class AIDLConnection(
         functionParameterValues: List<Any?>,
         isSuspended: Boolean
     ): Any? {
-        return this.suspendMutex.withLock {
-            if (isSuspended) {
-                this.callService.callSuspendFunction(
-                    functionOwner = functionOwner,
-                    functionName = functionName,
-                    functionUniqueKey = functionUniqueKey,
-                    argumentTypes = functionParameterTypes.filter { it != Continuation::class.java },
-                    argumentValue = functionParameterValues.filter { it !is Continuation<*> }
-                )
-            } else {
-                this.callService.callFunction(
-                    functionOwner = functionOwner,
-                    functionName = functionName,
-                    functionUniqueKey = functionUniqueKey,
-                    argumentTypes = functionParameterTypes,
-                    argumentValue = functionParameterValues
-                )
-            }
+        return if (isSuspended) {
+            this.callService.callSuspendFunction(
+                functionOwner = functionOwner,
+                functionName = functionName,
+                functionUniqueKey = functionUniqueKey,
+                argumentTypes = functionParameterTypes.filter { it != Continuation::class.java },
+                argumentValue = functionParameterValues.filter { it !is Continuation<*> }
+            )
+        } else {
+            this.callService.callFunction(
+                functionOwner = functionOwner,
+                functionName = functionName,
+                functionUniqueKey = functionUniqueKey,
+                argumentTypes = functionParameterTypes,
+                argumentValue = functionParameterValues
+            )
         }
     }
 }

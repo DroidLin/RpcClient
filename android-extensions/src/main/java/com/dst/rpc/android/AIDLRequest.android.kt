@@ -53,7 +53,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
     val functionUniqueKey: String,
     val classTypesOfFunctionParameter: List<String>,
     val valuesOfFunctionParameter: List<Any?>,
-    internal val AIDLCallback: AIDLCallback,
+    internal val aidlCallback: AIDLCallback,
 ) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -62,7 +62,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
         functionUniqueKey = requireNotNull(parcel.readString()),
         classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
         valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
-        AIDLCallback = AIDLCallback(AIDLFunction(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
+        aidlCallback = AIDLCallback(AIDLFunction(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -71,7 +71,7 @@ data class AndroidSuspendInvocationRequest internal constructor(
         parcel.writeString(this.functionUniqueKey)
         parcel.writeList(this.classTypesOfFunctionParameter)
         parcel.writeList(this.valuesOfFunctionParameter)
-        parcel.writeStrongBinder(this.AIDLCallback.iBinder)
+        parcel.writeStrongBinder(this.aidlCallback.iBinder)
     }
 
     override fun describeContents(): Int {
@@ -97,8 +97,8 @@ data class AndroidSuspendInvocationRequest internal constructor(
 internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? = null) : Request, Parcelable {
 
     constructor(parcel: Parcel) : this(
-        data = requireNotNull(parcel.readValue(RPCallbackRequest::class.java.classLoader)),
-        throwable = requireNotNull(parcel.readSerializable() as? Throwable)
+        data = parcel.readValue(RPCallbackRequest::class.java.classLoader),
+        throwable = parcel.readSerializable() as? Throwable
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

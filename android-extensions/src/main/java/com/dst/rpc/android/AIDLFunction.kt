@@ -91,7 +91,7 @@ private abstract class AIDLFunctionImplStub : AIDLFunction {
     val function = object : Function.Stub() {
         override fun invoke(bridge: TransportBridge?) {
             val request = bridge?.request
-            bridge?.response = if (request != null && request is Request) {
+            bridge?.response = if (request != null) {
                 this@AIDLFunctionImplStub.invoke(request)
             } else Response
         }

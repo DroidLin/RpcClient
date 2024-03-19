@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.suspend_open_user_name).setOnClickListener { v ->
             lifecycleScope.launch {
                 val countTime = measureNanoTime {
-                    val name = this@MainActivity.testInterface.suspendGetUsername(222222)
+                    val name = this@MainActivity.testInterface.suspendOpenUsername(1231, "2122")
                     println(name)
                 }
                 println("getName cost: ${(countTime) / 1_000_000.0}ms")
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.suspend_get_user_name).setOnClickListener { v ->
             lifecycleScope.launch {
                 val countTime = measureNanoTime {
-                    val name = this@MainActivity.testInterface.suspendOpenUsername(1231, "2122")
+                    val name = this@MainActivity.testInterface.suspendGetUsername(222222)
                     println(name)
                 }
                 println("getName cost: ${(countTime) / 1_000_000.0}ms")
