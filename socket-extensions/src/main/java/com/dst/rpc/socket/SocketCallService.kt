@@ -3,6 +3,8 @@ package com.dst.rpc.socket
 import com.dst.rpc.OneShotContinuation
 import com.dst.rpc.Address
 import com.dst.rpc.CallService
+import com.dst.rpc.ClientManager
+import com.dst.rpc.INoProguard
 import com.dst.rpc.socket.serializer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -11,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.Socket
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resume
@@ -132,4 +135,26 @@ private class SocketCallServiceProxy(
 private class SocketCallServiceStub : CallService {
 
     override val isOpen: Boolean get() = true
+
+    override fun callFunction(
+        functionOwner: Class<*>,
+        functionName: String,
+        functionUniqueKey: String,
+        argumentTypes: List<Class<*>>,
+        argumentValue: List<Any?>
+    ): Any? {
+        return ClientManager.getService(functionOwner as Class<INoProguard>, functionUniqueKey.isNotEmpty())
+            .invokeNonSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes, argumentValue)
+    }
+
+    override suspend fun callSuspendFunction(
+        functionOwner: Class<*>,
+        functionName: String,
+        functionUniqueKey: String,
+        argumentTypes: List<Class<*>>,
+        argumentValue: List<Any?>
+    ): Any? {
+        return ClientManager.getService(functionOwner as Class<INoProguard>, functionUniqueKey.isNotEmpty())
+            .invokeSuspendFunction(functionOwner, functionName, functionUniqueKey, argumentTypes + Continuation::class.java, argumentValue)
+    }
 }

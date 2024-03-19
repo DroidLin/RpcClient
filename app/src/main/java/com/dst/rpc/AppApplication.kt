@@ -21,5 +21,6 @@ class AppApplication : Application() {
             .coroutineContext(EmptyCoroutineContext)
             .build()
         ClientManager.init(initConfig)
+        ClientManager.putService(TestInterface::class.java, TestInterfaceImpl())
     }
 }

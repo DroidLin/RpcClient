@@ -61,5 +61,5 @@ dependencies {
     implementation(project(":android-extensions"))
 //    implementation(project(":socket-extensions"))
 //    kapt(project(":kapt-compiler"))
-    ksp(project(":ksp-compiler"))
+//    ksp(project(":ksp-compiler"))
 }
