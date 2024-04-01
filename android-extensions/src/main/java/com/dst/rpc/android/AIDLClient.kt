@@ -18,6 +18,7 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
     private val remoteAndroidServiceClass: Class<out Service>? = initConfig.remoteAndroidServiceClass
     private val androidContext: Context = initConfig.androidContext
     private val preAttachCallback: OnPreAttachCallback? = initConfig.preAttachCallback
+    private val coroutineScope: CoroutineScope = CoroutineScope(initConfig.coroutineContext)
 
     override fun openConnection(
         sourceAddress: Address,
@@ -45,27 +46,25 @@ internal class AIDLClient(initConfig: InitConfig) : Client {
                 return connection
             }
         }
-        val connectionOperation = coroutineScope {
-            async {
-                suspendCoroutine { continuation ->
-                    val timeoutJob = launch {
-                        delay(this@AIDLClient.connectTimeout)
-                        continuation.resumeWithException(exception = RuntimeException("fail to connection to remote: ${remoteAddress.value} after ${this@AIDLClient.connectTimeout}ms."))
-                    }
-                    val localCallService = AndroidCallService(callService = object : AndroidCallService {
-                        override fun attachCallService(callService: AndroidCallService) {
-                            timeoutJob.cancel()
-                            continuation.resume(AIDLConnection(callService))
-                        }
-                    })
-                    val aidlContext = AIDLContext(
-                        remoteServiceName = this@AIDLClient.remoteAndroidServiceClass?.name ?: "",
-                        sourceAddress = AndroidAddress(sourceAddress),
-                        remoteAddress = AndroidAddress(remoteAddress),
-                        callService = localCallService
-                    )
-                    AIDLConnector.attach(this@AIDLClient.strategy, aidlContext, androidContext)
+        val connectionOperation = this@AIDLClient.coroutineScope.async {
+            suspendCoroutine { continuation ->
+                val timeoutJob = launch {
+                    delay(this@AIDLClient.connectTimeout)
+                    continuation.resumeWithException(exception = RuntimeException("fail to connection to remote: ${remoteAddress.value} after ${this@AIDLClient.connectTimeout}ms."))
                 }
+                val localCallService = AndroidCallService(callService = object : AndroidCallService {
+                    override fun attachCallService(callService: AndroidCallService) {
+                        timeoutJob.cancel()
+                        continuation.resume(AIDLConnection(callService))
+                    }
+                })
+                val aidlContext = AIDLContext(
+                    remoteServiceName = this@AIDLClient.remoteAndroidServiceClass?.name ?: "",
+                    sourceAddress = AndroidAddress(sourceAddress),
+                    remoteAddress = AndroidAddress(remoteAddress),
+                    callService = localCallService
+                )
+                AIDLConnector.attach(this@AIDLClient.strategy, aidlContext, androidContext)
             }
         }
         acceptConnection(remoteAddress, connectionOperation)

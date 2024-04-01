@@ -14,7 +14,7 @@ interface CallService {
         functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
-    ): Any?
+    ): Any? = null
 
     suspend fun callSuspendFunction(
         functionOwner: Class<*>,
@@ -22,7 +22,7 @@ interface CallService {
         functionUniqueKey: String,
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
-    ): Any?
+    ): Any? = null
 
     fun interface Callback {
 
