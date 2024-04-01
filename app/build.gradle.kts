@@ -33,12 +33,12 @@ android {
         jvmTarget = "17"
     }
     kotlin {
-//        sourceSets.main {
-//            kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}main${File.separator}kotlin")
-//        }
-//        sourceSets.test {
-//            kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}test${File.separator}kotlin")
-//        }
+        sourceSets.main {
+            kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}main${File.separator}kotlin")
+        }
+        sourceSets.test {
+            kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}test${File.separator}kotlin")
+        }
     }
 }
 
@@ -61,5 +61,5 @@ dependencies {
     implementation(project(":android-extensions"))
 //    implementation(project(":socket-extensions"))
 //    kapt(project(":kapt-compiler"))
-//    ksp(project(":ksp-compiler"))
+    ksp(project(":ksp-compiler"))
 }

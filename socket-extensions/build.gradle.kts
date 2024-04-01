@@ -14,9 +14,11 @@ java {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    testImplementation(project(":core-annotation"))
+
     implementation(project(":core"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.2")
-    testImplementation(project(":core-annotation"))
+    implementation("com.github.DroidLin:serializer:1.0.0")
     kapt(project(":kapt-compiler"))
 }
 

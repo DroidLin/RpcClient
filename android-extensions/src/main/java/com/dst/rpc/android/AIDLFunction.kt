@@ -60,12 +60,13 @@ private class AIDLFunctionImpl(val function: Function) : AIDLFunction {
 
     override fun invoke(request: Request): Response {
         val transportBridge = TransportBridge.obtain()
-        var response: Response? = null
+        var response: Response?
         try {
             transportBridge.request = request
             this.function.invoke(transportBridge)
-            response = transportBridge.response as? Response
+            response = transportBridge.response
         } catch (throwable: Throwable) {
+            throwable.printStackTrace()
             response = AndroidParcelableInvocationInternalErrorResponse(throwable)
         } finally {
             TransportBridge.recycle(transportBridge)

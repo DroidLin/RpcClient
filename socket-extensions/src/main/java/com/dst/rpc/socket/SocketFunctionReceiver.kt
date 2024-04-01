@@ -1,14 +1,11 @@
 package com.dst.rpc.socket
 
+import com.android.dependencies.serializer.SerializeReader
+import com.android.dependencies.serializer.SerializeWriter
 import com.dst.rpc.InitConfig
 import com.dst.rpc.OneShotContinuation
 import com.dst.rpc.Address
 import com.dst.rpc.safeUnbox
-import com.dst.rpc.socket.serializer.KEY_FUNCTION_SUSPEND_CALLBACK
-import com.dst.rpc.socket.serializer.KEY_FUNCTION_TYPE_NON_SUSPEND
-import com.dst.rpc.socket.serializer.KEY_FUNCTION_TYPE_SUSPEND
-import com.dst.rpc.socket.serializer.SerializeReader
-import com.dst.rpc.socket.serializer.SerializeWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

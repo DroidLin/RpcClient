@@ -1,11 +1,12 @@
 package com.dst.rpc.socket
 
+import com.android.dependencies.serializer.SerializeReader
+import com.android.dependencies.serializer.SerializeWriter
 import com.dst.rpc.OneShotContinuation
 import com.dst.rpc.Address
 import com.dst.rpc.CallService
 import com.dst.rpc.ClientManager
 import com.dst.rpc.INoProguard
-import com.dst.rpc.socket.serializer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay

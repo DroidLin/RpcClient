@@ -1,5 +1,5 @@
-import com.dst.rpc.socket.serializer.SerializeReader
-import com.dst.rpc.socket.serializer.SerializeWriter
+import com.android.dependencies.serializer.SerializeReader
+import com.android.dependencies.serializer.SerializeWriter
 import org.junit.Assert
 import org.junit.Test
 

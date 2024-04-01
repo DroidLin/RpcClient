@@ -1,9 +1,8 @@
 package com.dst.rpc.socket
 
+import com.android.dependencies.serializer.SerializeWriter
 import com.dst.rpc.Address
 import com.dst.rpc.CallService
-import com.dst.rpc.socket.serializer.KEY_FUNCTION_SUSPEND_CALLBACK
-import com.dst.rpc.socket.serializer.SerializeWriter
 import java.net.InetSocketAddress
 import java.net.Socket
 

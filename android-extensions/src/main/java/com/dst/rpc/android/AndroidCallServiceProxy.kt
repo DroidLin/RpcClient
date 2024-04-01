@@ -31,16 +31,12 @@ internal class AndroidCallServiceProxy(val aidlFunction: AIDLFunction) : Android
             classTypesOfFunctionParameter = argumentTypes.map { it.name },
             valuesOfFunctionParameter = argumentValue
         )
-        return when (val result = this.aidlFunction.invoke(request)) {
-            is AndroidParcelableInvocationResponse -> {
-                val throwable = result.throwable
-                if (throwable != null) {
-                    throw Throwable(throwable)
-                }
-                result.data
-            }
-            else -> null
+        val result = this.aidlFunction.invoke(request)
+        val throwable = result.throwable
+        if (throwable != null) {
+            throw Throwable(throwable)
         }
+        return result.data
     }
 
     override suspend fun callSuspendFunction(
@@ -72,16 +68,12 @@ internal class AndroidCallServiceProxy(val aidlFunction: AIDLFunction) : Android
             aidlCallback = rpCallback
         )
         this.aidlFunction.addDeathListener(deathListener)
-        return@suspendCoroutineUninterceptedOrReturn when (val result = this.aidlFunction.invoke(request)) {
-            is AndroidParcelableInvocationResponse -> {
-                val throwable = result.throwable
-                if (throwable != null) {
-                    throw Throwable(throwable)
-                }
-                result.data
-            }
-            is AndroidParcelableInvocationInternalErrorResponse -> COROUTINE_SUSPENDED
-            else -> throw UnsupportedOperationException("unSupported ResponseType: ${result.javaClass}")
+        val result = this.aidlFunction.invoke(request)
+        val throwable = result.throwable
+        if (throwable != null) {
+            this.aidlFunction.removeDeathListener(deathListener)
+            throw Throwable(throwable)
         }
+        result.data
     }
 }
