@@ -59,7 +59,7 @@ internal object InterfaceStubClassGenerator {
             .apply {
                 val functionList = rootElement.enclosedElements.filterIsInstance<ExecutableElement>().filter { !it.isSuspendExecutable }
                 if (functionList.isNotEmpty()) {
-                    appendLine("\t\tObject result = null;")
+                    appendLine("\t\t${Object::class.java.simpleName} result = null;")
                     appendLine("\t\tswitch (functionUniqueKey) {")
                     functionList.forEach { element ->
                         appendLine("\t\t\tcase \"${buildFunctionUniqueKey(element)}\":")
@@ -94,7 +94,7 @@ internal object InterfaceStubClassGenerator {
                     appendLine("\t\tswitch (functionUniqueKey) {")
                     functionList.forEach { element ->
                         appendLine("\t\t\tcase \"${buildFunctionUniqueKey(element)}\":")
-                        if (element.returnType.toString() == "void" || element.returnType.toString() == "java.lang.Void") {
+                        if (element.returnType.toString() == requireNotNull(Void::class.javaPrimitiveType).name || element.returnType.toString() == Void::class.java.name) {
                             append("\t\t\t\tthis.implementationInstance.${element.simpleName}(")
                         } else append("\t\t\t\tresult = this.implementationInstance.${element.simpleName}(")
                         val functionParameterList = element.parameters

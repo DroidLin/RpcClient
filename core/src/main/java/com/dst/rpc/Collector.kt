@@ -6,5 +6,5 @@ package com.dst.rpc
  */
 interface Collector {
 
-    fun collect(registry: RPCInterfaceRegistry)
+    fun collect(registry: InterfaceRegistry)
 }

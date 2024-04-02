@@ -124,12 +124,12 @@ object ClientManager {
         if (isProxyFactoriesEmpty() || isStubFactoriesEmpty()) {
             synchronized(this) {
                 if (isProxyFactoriesEmpty() || isStubFactoriesEmpty()) {
-                    val registry = object : RPCInterfaceRegistry {
-                        override fun <T : INoProguard> putServiceProxyLazy(clazz: Class<T>, factory: (Address, Address, ExceptionHandler) -> T) {
+                    val registry = object : InterfaceRegistry {
+                        override fun <T : INoProguard> putServiceProxy(clazz: Class<T>, factory: (Address, Address, ExceptionHandler) -> T) {
                             this@ClientManager.interfaceProxyFactories[clazz] = factory
                         }
 
-                        override fun <T : INoProguard> putServiceStubLazy(clazz: Class<T>, factory: (T) -> StubFunction) {
+                        override fun <T : INoProguard> putServiceStub(clazz: Class<T>, factory: (T) -> StubFunction) {
                             this@ClientManager.interfaceStubFactories[clazz] = factory as (INoProguard) -> StubFunction
                         }
 

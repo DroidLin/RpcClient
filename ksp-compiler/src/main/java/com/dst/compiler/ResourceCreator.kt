@@ -1,6 +1,6 @@
 package com.dst.compiler
 
-import com.dst.rpc.RPCInterfaceRegistry
+import com.dst.rpc.InterfaceRegistry
 import com.dst.rpc.Collector
 import com.dst.rpc.annotations.RPCImplementation
 import com.google.devtools.ksp.KspExperimental
@@ -42,23 +42,17 @@ internal object ResourceCreator {
             .appendLine()
             .appendLine("internal class $generatedClassName : ${Collector::class.java.name} {")
             .appendLine()
-            .appendLine("\toverride fun collect(registry: ${RPCInterfaceRegistry::class.java.name}) {")
+            .appendLine("\toverride fun collect(registry: ${InterfaceRegistry::class.java.name}) {")
             .apply {
                 annotatedClassDeclaredElementList.forEachIndexed { index, ksClassDeclaration ->
                     val annotatedClassPackageName = ksClassDeclaration.packageName.asString()
-                    appendLine("\t\tregistry.putServiceProxyLazy(${annotatedClassPackageName}.${ksClassDeclaration.simpleName.asString()}::class.java) { source, remote, handler -> ${annotatedClassPackageName}.${ksClassDeclaration}_Generated_Proxy(source, remote, handler) }")
+                    appendLine("\t\tregistry.putServiceProxy(${annotatedClassPackageName}.${ksClassDeclaration.simpleName.asString()}::class.java) { source, remote, handler -> ${annotatedClassPackageName}.${ksClassDeclaration}_Generated_Proxy(source, remote, handler) }")
                 }
                 annotatedClassDeclaredElementList.forEachIndexed { index, ksClassDeclaration ->
-                    if (index == 0) {
-                        appendLine()
-                    }
                     val annotatedClassPackageName = ksClassDeclaration.packageName.asString()
-                    appendLine("\t\tregistry.putServiceStubLazy(${annotatedClassPackageName}.${ksClassDeclaration.simpleName.asString()}::class.java) { impl -> ${annotatedClassPackageName}.${ksClassDeclaration}_Generated_Stub(impl) }")
+                    appendLine("\t\tregistry.putServiceStub(${annotatedClassPackageName}.${ksClassDeclaration.simpleName.asString()}::class.java) { impl -> ${annotatedClassPackageName}.${ksClassDeclaration}_Generated_Stub(impl) }")
                 }
                 implementationClassDeclarations.forEachIndexed { index, ksClassDeclaration ->
-                    if (index == 0) {
-                        appendLine()
-                    }
                     val implementationAnnotation = ksClassDeclaration.annotations.find { ksAnnotation -> ksAnnotation.shortName.asString() == RPCImplementation::class.java.simpleName }
                     val ksValueAnnotationArgumentValue = implementationAnnotation?.arguments?.find { it.name?.asString() == "clazz" }?.value
                     if (ksValueAnnotationArgumentValue != null && ksValueAnnotationArgumentValue is KSType) {
