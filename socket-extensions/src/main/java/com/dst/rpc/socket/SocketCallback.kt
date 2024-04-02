@@ -23,22 +23,22 @@ private class SocketCallbackImpl(
     private val callbackToken: Long
 ) : SocketCallback {
     override fun callback(data: Any?, throwable: Throwable?) {
-        val tempSocket = Socket().also { socket ->
+        Socket().also { socket ->
             val callbackAddress = InetSocketAddress(this.sourceAddress.domain, this.sourceAddress.port)
             socket.connect(callbackAddress)
+        }.use { tempSocket ->
+            val byteArray = SerializeWriter().also { serializeWriter ->
+                serializeWriter.writeString(KEY_FUNCTION_SUSPEND_CALLBACK)
+                serializeWriter.writeLong(this.callbackToken)
+                serializeWriter.writeValue(data)
+                serializeWriter.writeValue(throwable)
+                serializeWriter.close()
+            }.toByteArray()
+            tempSocket.getOutputStream().write(byteArray)
+            tempSocket.getOutputStream().flush()
+            tempSocket.getOutputStream().close()
+            tempSocket.shutdownOutput()
+            tempSocket.shutdownInput()
         }
-        val byteArray = SerializeWriter().also { serializeWriter ->
-            serializeWriter.writeString(KEY_FUNCTION_SUSPEND_CALLBACK)
-            serializeWriter.writeLong(this.callbackToken)
-            serializeWriter.writeValue(data)
-            serializeWriter.writeValue(throwable)
-            serializeWriter.close()
-        }.toByteArray()
-        tempSocket.getOutputStream().write(byteArray)
-        tempSocket.getOutputStream().flush()
-        tempSocket.getOutputStream().close()
-        tempSocket.shutdownOutput()
-        tempSocket.shutdownInput()
-        tempSocket.close()
     }
 }

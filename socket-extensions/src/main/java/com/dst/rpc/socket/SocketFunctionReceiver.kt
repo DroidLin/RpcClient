@@ -105,6 +105,10 @@ internal class SocketFunctionReceiver(initConfig: InitConfig) {
                 clientSocket.getOutputStream().flush()
                 clientSocket.shutdownOutput()
             }
+            /**
+             * receive callback request from remote, usually suspend function changes it running context.
+             * like running from Dispatchers.Main to Dispatchers.Default.
+             */
             KEY_FUNCTION_SUSPEND_CALLBACK -> {
                 val token = serializeReader.readLong()
                 val data = serializeReader.readValue<Any?>()

@@ -45,29 +45,27 @@ private class SocketCallServiceProxy(
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? {
-        val socket = this.connect()
-        val byteArray = SerializeWriter().also { serializeWriter ->
-            serializeWriter.writeString(KEY_FUNCTION_TYPE_NON_SUSPEND)
-            serializeWriter.writeString(functionOwner.name)
-            serializeWriter.writeString(functionName)
-            serializeWriter.writeString(functionUniqueKey)
-            serializeWriter.writeList(argumentTypes.map { it.name })
-            serializeWriter.writeList(argumentValue)
-        }.toByteArray()
+        this.connect().use { socket ->
+            val byteArray = SerializeWriter().also { serializeWriter ->
+                serializeWriter.writeString(KEY_FUNCTION_TYPE_NON_SUSPEND)
+                serializeWriter.writeString(functionOwner.name)
+                serializeWriter.writeString(functionName)
+                serializeWriter.writeString(functionUniqueKey)
+                serializeWriter.writeList(argumentTypes.map { it.name })
+                serializeWriter.writeList(argumentValue)
+            }.toByteArray()
 
-        socket.getOutputStream().write(byteArray)
-        socket.getOutputStream().flush()
-        socket.shutdownOutput()
+            socket.getOutputStream().write(byteArray)
+            socket.getOutputStream().flush()
+            socket.shutdownOutput()
 
-        val serializeReader = SerializeReader(socket.getInputStream())
-        val data = serializeReader.readValue<Any?>()
-        val throwable = serializeReader.readValue<Throwable?>()
-        socket.close()
-        if (throwable != null) {
-            throw throwable
+            val serializeReader = SerializeReader(socket.getInputStream())
+            val data = serializeReader.readValue<Any?>()
+            val throwable = serializeReader.readValue<Throwable?>()
+
+            if (throwable != null) throw throwable
+            return data
         }
-
-        return data
     }
 
     override suspend fun callSuspendFunction(
@@ -77,51 +75,50 @@ private class SocketCallServiceProxy(
         argumentTypes: List<Class<*>>,
         argumentValue: List<Any?>
     ): Any? = coroutineScope {
-        val socket = withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             this@SocketCallServiceProxy.connect()
-        }
-        suspendCoroutineUninterceptedOrReturn { continuation ->
-            var token: Long = 0L
-            val oneShotContinuation = OneShotContinuation(continuation, this.coroutineContext)
-            val timeoutWaitingTask = launch {
-                delay(this@SocketCallServiceProxy.connectionTimeout)
-                oneShotContinuation.resumeWithException(Throwable("connection timeout for function call: ${functionOwner.name}#${functionName}"))
-            }
-            val callback = SocketCallback { asyncData, asyncThrowable ->
-                timeoutWaitingTask.cancel()
-                SocketAsyncCallbackRegistry.removeCallback(token)
-                if (asyncThrowable != null) {
-                    oneShotContinuation.resumeWithException(asyncThrowable)
-                } else oneShotContinuation.resume(asyncData)
-            }
-            token = SocketAsyncCallbackRegistry.addCallback(callback)
-            val byteArray = SerializeWriter().also { serializeWriter ->
-                serializeWriter.writeString(KEY_FUNCTION_TYPE_SUSPEND)
-                serializeWriter.writeString(functionOwner.name)
-                serializeWriter.writeString(functionName)
-                serializeWriter.writeString(functionUniqueKey)
-                serializeWriter.writeList(argumentTypes.map { it.name })
-                serializeWriter.writeList(argumentValue)
-                serializeWriter.writeSerializable(this@SocketCallServiceProxy.sourceAddress)
-                serializeWriter.writeLong(token)
-                serializeWriter.close()
-            }.toByteArray()
-            socket.getOutputStream().write(byteArray)
-            socket.getOutputStream().flush()
-            socket.shutdownOutput()
+        }.use { socket ->
+            suspendCoroutineUninterceptedOrReturn { continuation ->
+                var token: Long = 0L
+                val oneShotContinuation = OneShotContinuation(continuation, this.coroutineContext)
+                val timeoutWaitingTask = launch {
+                    delay(this@SocketCallServiceProxy.connectionTimeout)
+                    oneShotContinuation.resumeWithException(Throwable("connection timeout for function call: ${functionOwner.name}#${functionName}"))
+                }
+                val callback = SocketCallback { asyncData, asyncThrowable ->
+                    timeoutWaitingTask.cancel()
+                    SocketAsyncCallbackRegistry.removeCallback(token)
+                    if (asyncThrowable != null) {
+                        oneShotContinuation.resumeWithException(asyncThrowable)
+                    } else oneShotContinuation.resume(asyncData)
+                }
+                token = SocketAsyncCallbackRegistry.addCallback(callback)
 
-            val serializeReader = SerializeReader(socket.getInputStream())
-            val data = serializeReader.readValue<Any?>()
-            val throwable = serializeReader.readValue<Throwable?>()
-            socket.close()
-            timeoutWaitingTask.cancel()
-            if (throwable != null) {
-                throw throwable
+                val byteArray = SerializeWriter().also { serializeWriter ->
+                    serializeWriter.writeString(KEY_FUNCTION_TYPE_SUSPEND)
+                    serializeWriter.writeString(functionOwner.name)
+                    serializeWriter.writeString(functionName)
+                    serializeWriter.writeString(functionUniqueKey)
+                    serializeWriter.writeList(argumentTypes.map { it.name })
+                    serializeWriter.writeList(argumentValue)
+                    serializeWriter.writeSerializable(this@SocketCallServiceProxy.sourceAddress)
+                    serializeWriter.writeLong(token)
+                    serializeWriter.close()
+                }.toByteArray()
+                socket.getOutputStream().write(byteArray)
+                socket.getOutputStream().flush()
+                socket.shutdownOutput()
+
+                val serializeReader = SerializeReader(socket.getInputStream())
+                val data = serializeReader.readValue<Any?>()
+                val throwable = serializeReader.readValue<Throwable?>()
+                timeoutWaitingTask.cancel()
+                if (throwable != null) throw throwable
+                if (data != COROUTINE_SUSPENDED) {
+                    SocketAsyncCallbackRegistry.removeCallback(token)
+                }
+                data
             }
-            if (data != COROUTINE_SUSPENDED) {
-                SocketAsyncCallbackRegistry.removeCallback(token)
-            }
-            data
         }
     }
 

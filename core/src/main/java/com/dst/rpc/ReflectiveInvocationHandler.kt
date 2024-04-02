@@ -17,13 +17,14 @@ internal class ReflectiveInvocationHandler(
         val functionOwner = p1.declaringClass
         val functionName = p1.name
         val functionParameterTypes = p1.parameterTypes.toList().filterNotNull()
-        val functionParameterValues = p2?.filter { it !is Continuation<*> } ?: emptyList()
+        val functionParameterValues = p2?.toList() ?: emptyList()
         val isSuspendFunction = functionParameterTypes.lastOrNull() == Continuation::class.java
         return if (isSuspendFunction) {
             val continuation = requireNotNull(p2?.find { it is Continuation<*> } as Continuation<Any?>)
-            val functionParameterTypesWithoutContinuation = functionParameterTypes.filter { it.javaClass != Continuation::class.java }
+            val functionParameterTypesWithoutContinuation = functionParameterTypes.filter { it != Continuation::class.java }
+            val functionParameterValuesWithoutContinuation = functionParameterValues.filter { it !is Continuation<*> }
             (this.connection::call as Function7<Class<*>, String, String, List<Class<*>>, List<Any?>, Boolean, Continuation<Any?>, Any?>)
-                .invoke(functionOwner, functionName, "", functionParameterTypesWithoutContinuation, functionParameterValues, true, continuation)
+                .invoke(functionOwner, functionName, "", functionParameterTypesWithoutContinuation, functionParameterValuesWithoutContinuation, true, continuation)
         } else runBlocking { this@ReflectiveInvocationHandler.connection.call(functionOwner, functionName, "", functionParameterTypes, functionParameterValues, false) }
     }
 }

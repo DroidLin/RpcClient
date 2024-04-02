@@ -25,4 +25,9 @@ fun main() = runBlocking {
         println(testInterface.getUserName())
         println("cost: ${(System.nanoTime() - startTimestamp) / 1000_000.0}ms")
     }
+    for (index in 0 until 10) {
+        val startTimestamp = System.nanoTime()
+        println(testInterface.name)
+        println("cost: ${(System.nanoTime() - startTimestamp) / 1000_000.0}ms")
+    }
 }
