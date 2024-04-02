@@ -9,9 +9,6 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
-import com.lza.android.inter.process.compiler.buildFunctionUniqueKey
-import com.lza.android.inter.process.compiler.buildPropertyUniqueKey
-import com.lza.android.inter.process.compiler.buildType
 import java.io.Writer
 
 /**

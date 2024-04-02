@@ -2,7 +2,9 @@ package com.dst.compiler
 
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
+import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
+import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
 
 /**
@@ -17,6 +19,20 @@ fun buildType(element: Element): String {
 
 fun buildType(mirror: TypeMirror): String {
     return mirror.toString()
+}
+
+fun buildTypeWithoutParameterizedTypes(element: Element): String {
+    return buildTypeWithoutParameterizedTypes(element.asType())
+}
+
+fun buildTypeWithoutParameterizedTypes(mirror: TypeMirror): String {
+    return StringBuilder()
+        .apply {
+            if (mirror is DeclaredType) {
+                append((mirror.asElement() as TypeElement).qualifiedName.toString())
+            } else append(mirror.toString())
+        }
+        .toString()
 }
 
 fun buildFunctionUniqueKey(element: ExecutableElement): String {

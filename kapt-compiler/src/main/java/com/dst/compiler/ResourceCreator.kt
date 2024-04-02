@@ -5,6 +5,7 @@ import com.dst.rpc.ExceptionHandler
 import com.dst.rpc.StubFunction
 import com.dst.rpc.InterfaceRegistry
 import com.dst.rpc.Collector
+import com.dst.rpc.annotations.RPCImplFactory
 import com.dst.rpc.annotations.RPCImplementation
 import org.jetbrains.annotations.NotNull
 import javax.annotation.processing.ProcessingEnvironment
@@ -21,13 +22,15 @@ internal object ResourceCreator {
     fun resourceCreate(
         environment: ProcessingEnvironment,
         interfaceAnnotatedElements: List<TypeElement>,
-        interfaceImplementationElements: List<TypeElement>
+        interfaceImplementationElements: List<TypeElement>,
+        interfaceImplementationFactoryElements: List<TypeElement>
     ) {
-        if (interfaceAnnotatedElements.isEmpty() && interfaceImplementationElements.isEmpty()) {
+        if (interfaceAnnotatedElements.isEmpty() && interfaceImplementationElements.isEmpty() && interfaceImplementationFactoryElements.isEmpty()) {
             return
         }
         val firstClassDeclaration = interfaceAnnotatedElements.firstOrNull()
             ?: interfaceImplementationElements.firstOrNull()
+            ?: interfaceImplementationFactoryElements.firstOrNull()
             ?: return
         val packageName = (firstClassDeclaration.enclosingElement as PackageElement).qualifiedName.toString()
         val generatedClassName = "${Collector::class.java.simpleName}_${Integer.toBinaryString(firstClassDeclaration.simpleName.hashCode())}"
@@ -65,6 +68,16 @@ internal object ResourceCreator {
                         val clazz = elementValues["clazz"]
                         if (clazz != null) {
                             appendLine("\t\tregistry.putServiceImpl(${clazz.value}.class, new ${typeElement.qualifiedName}());")
+                        }
+                    }
+                }
+                interfaceImplementationFactoryElements.forEach { typeElement ->
+                    val annotation = typeElement.annotationMirrors.find { it.annotationType.toString() == RPCImplFactory::class.java.name }
+                    if (annotation != null) {
+                        val elementValues = annotation.elementValues.mapKeys { (executableElement, _) -> executableElement.simpleName.toString() }
+                        val clazz = elementValues["clazz"]
+                        if (clazz != null) {
+                            appendLine("\t\tregistry.putServiceImplFactory(${clazz.value}.class, new ${typeElement.qualifiedName}());")
                         }
                     }
                 }

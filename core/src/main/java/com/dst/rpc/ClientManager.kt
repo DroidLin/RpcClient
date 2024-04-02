@@ -10,14 +10,15 @@ import java.util.ServiceLoader
 object ClientManager {
 
     private val interfaceImplementationReference = HashMap<Class<*>, INoProguard>()
+    private val interfaceImplementationFactoryReference = HashMap<Class<*>, InterfaceFactory<INoProguard>>()
 
-    private val interfaceProxyFactories: MutableMap<Class<*>, (Address, Address, ExceptionHandler) -> INoProguard> = HashMap()
-    private val interfaceStubFactories: MutableMap<Class<*>, (INoProguard) -> StubFunction> = HashMap()
+    private val interfaceProxyFactories = HashMap<Class<*>, (Address, Address, ExceptionHandler) -> INoProguard>()
+    private val interfaceStubFactories = HashMap<Class<*>, (INoProguard) -> StubFunction>()
 
-    private val interfaceStubFunctionCache: MutableMap<Class<*>, StubFunction> = HashMap()
+    private val interfaceStubFunctionCache = HashMap<Class<*>, StubFunction>()
 
-    private val remoteClientFactoryMap: MutableList<Client.Factory> = ArrayList()
-    private val remoteClientImplMap: MutableMap<String, Client> = HashMap()
+    private val remoteClientFactoryMap = ArrayList<Client.Factory>()
+    private val remoteClientImplMap = HashMap<String, Client>()
 
     private lateinit var initConfig: InitConfig
 
@@ -62,13 +63,12 @@ object ClientManager {
     @JvmStatic
     @JvmOverloads
     fun getService(clazz: Class<*>, performanceEnabled: Boolean = false): StubFunction {
-        val rawService = synchronized(this.interfaceImplementationReference) {
-            this.interfaceImplementationReference[clazz]
-        } ?: throw NullPointerException("no business impl for interface class: ${clazz.name} is available.")
-
         if (this.interfaceStubFunctionCache[clazz] == null) {
             synchronized(this.interfaceStubFunctionCache) {
                 if (this.interfaceStubFunctionCache[clazz] == null) {
+                    val rawService = synchronized(this.interfaceImplementationReference) { this.interfaceImplementationReference[clazz] }
+                        ?: this.interfaceImplementationFactoryReference[clazz]?.interfaceCreate()
+                        ?: throw NullPointerException("no business impl for interface class: ${clazz.name} is available.")
                     this.interfaceStubFunctionCache[clazz] = if (performanceEnabled) {
                         val factory = this.interfaceStubFactories[clazz]
                         factory?.invoke(rawService) ?: StubFunction(rawServiceImpl = rawService)
@@ -135,6 +135,10 @@ object ClientManager {
 
                         override fun <T : INoProguard> putServiceImpl(clazz: Class<T>, impl: T) {
                             this@ClientManager.putService(clazz, impl)
+                        }
+
+                        override fun <T : INoProguard> putServiceImplFactory(clazz: Class<T>, factory: InterfaceFactory<T>) {
+                            this@ClientManager.interfaceImplementationFactoryReference[clazz] = factory as InterfaceFactory<INoProguard>
                         }
                     }
                     ServiceLoader.load(Collector::class.java).forEach { it.collect(registry) }

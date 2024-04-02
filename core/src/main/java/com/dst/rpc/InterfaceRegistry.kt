@@ -11,4 +11,6 @@ interface InterfaceRegistry {
     fun <T : INoProguard> putServiceStub(clazz: Class<T>, factory: (T) -> StubFunction)
 
     fun <T : INoProguard> putServiceImpl(clazz: Class<T>, impl: T)
+
+    fun <T : INoProguard> putServiceImplFactory(clazz: Class<T>, factory: InterfaceFactory<T>)
 }

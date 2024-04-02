@@ -91,7 +91,7 @@ internal object InterfaceProxyClassGenerator {
                                             if (index != 0) {
                                                 append(", ")
                                             }
-                                            append("${buildType(variableElement)}.class")
+                                            append("${buildTypeWithoutParameterizedTypes(variableElement)}.class")
                                         }
                                     }
                                     appendLine("),")
@@ -130,7 +130,7 @@ internal object InterfaceProxyClassGenerator {
                                             if (index != 0) {
                                                 append(", ")
                                             }
-                                            append("${buildType(variableElement)}.class")
+                                            append("${buildTypeWithoutParameterizedTypes(variableElement)}.class")
                                         }
                                     }
                                     appendLine("),")

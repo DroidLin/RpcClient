@@ -1,5 +1,6 @@
 package com.dst.compiler
 
+import com.dst.rpc.annotations.RPCImplFactory
 import com.dst.rpc.annotations.RPCImplementation
 import com.dst.rpc.annotations.RPCInterface
 import javax.annotation.processing.AbstractProcessor
@@ -35,7 +36,9 @@ class RemoteProcessAnnotationProcessor : AbstractProcessor() {
         }
         val interfaceImplementationElements = roundEnvironment.getElementsAnnotatedWith(RPCImplementation::class.java)
             .filterIsInstance<TypeElement>()
-        ResourceCreator.resourceCreate(this.processingEnv, interfaceAnnotatedElements, interfaceImplementationElements)
+        val implementationFactoryElements = roundEnvironment.getElementsAnnotatedWith(RPCImplFactory::class.java)
+            .filterIsInstance<TypeElement>()
+        ResourceCreator.resourceCreate(this.processingEnv, interfaceAnnotatedElements, interfaceImplementationElements, implementationFactoryElements)
         return false
     }
 }

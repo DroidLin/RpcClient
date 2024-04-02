@@ -9,7 +9,6 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.lza.android.inter.process.compiler.buildType
 
 /**
  * @author liuzhongao

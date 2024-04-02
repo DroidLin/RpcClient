@@ -36,10 +36,8 @@ private class ReflectStubFunction<T : INoProguard>(private val rawServiceImpl: T
         functionUniqueKey: String,
         functionParameterTypes: List<Class<*>>,
         functionParameterValue: List<Any?>
-    ): Any? {
-        return functionOwner.getDeclaredMethod(functionName, *functionParameterTypes.toTypedArray())
-            .invoke(this.rawServiceImpl, *functionParameterValue.toTypedArray())
-    }
+    ): Any? = functionOwner.getDeclaredMethod(functionName, *functionParameterTypes.toTypedArray())
+        .invoke(this.rawServiceImpl, *functionParameterValue.toTypedArray())
 
     override suspend fun invokeSuspendFunction(
         functionOwner: Class<*>,
@@ -47,8 +45,6 @@ private class ReflectStubFunction<T : INoProguard>(private val rawServiceImpl: T
         functionUniqueKey: String,
         functionParameterTypes: List<Class<*>>,
         functionParameterValue: List<Any?>
-    ): Any? {
-        return functionOwner.getDeclaredMethod(functionName, *functionParameterTypes.toTypedArray())
-            .invokeSuspend(this.rawServiceImpl, *functionParameterValue.toTypedArray())
-    }
+    ): Any? = functionOwner.getDeclaredMethod(functionName, *functionParameterTypes.toTypedArray())
+        .invokeSuspend(this.rawServiceImpl, *functionParameterValue.toTypedArray())
 }

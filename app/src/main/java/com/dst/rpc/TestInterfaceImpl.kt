@@ -1,6 +1,6 @@
 package com.dst.rpc
 
-import com.dst.rpc.annotations.RPCImplementation
+import com.dst.rpc.annotations.RPCImplFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
  * @author liuzhongao
  * @since 2024/3/10 10:43
  */
-@RPCImplementation(clazz = TestInterface::class)
+//@RPCImplementation(clazz = TestInterface::class)
 class TestInterfaceImpl : TestInterface {
     override val name: String get() = "liuzhongao"
 
@@ -25,6 +25,13 @@ class TestInterfaceImpl : TestInterface {
     override suspend fun suspendGetUsername(number: Int): String {
         return withContext(Dispatchers.IO) {
             "liuzhongao$number"
+        }
+    }
+
+    @RPCImplFactory(clazz = TestInterface::class)
+    class Factory : InterfaceFactory<TestInterface> {
+        override fun interfaceCreate(): TestInterface {
+            return TestInterfaceImpl()
         }
     }
 }
