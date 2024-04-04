@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.core.os.ParcelCompat
 import com.dst.rpc.Address
 
 /**
@@ -16,11 +17,7 @@ data class AndroidAddress(override val uri: Uri) : AIDLAddress {
 
     constructor(address: Address) : this(Uri.parse(address.value))
 
-    constructor(parcel: Parcel) : this(
-        uri = requireNotNull(if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            parcel.readParcelable(Uri::class.java.classLoader, Uri::class.java)
-        } else parcel.readParcelable(Uri::class.java.classLoader))
-    )
+    constructor(parcel: Parcel) : this(requireNotNull(ParcelCompat.readParcelable(parcel, AndroidAddress::class.java.classLoader, Uri::class.java)))
 
     override val scheme: String by lazy { this.uri.scheme ?: "" }
     override val domain: String by lazy { this.uri.host ?: "" }
@@ -28,7 +25,7 @@ data class AndroidAddress(override val uri: Uri) : AIDLAddress {
     override val value: String by lazy { this.uri.toString() }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelable(uri, flags)
+        parcel.writeParcelable(this.uri, 0)
     }
 
     override fun describeContents(): Int {

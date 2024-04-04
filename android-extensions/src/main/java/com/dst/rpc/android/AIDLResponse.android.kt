@@ -1,8 +1,8 @@
 package com.dst.rpc.android
 
-import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.core.os.ParcelCompat
 import com.dst.rpc.safeUnbox
 
 internal data class AndroidParcelableInvocationResponse(
@@ -11,10 +11,8 @@ internal data class AndroidParcelableInvocationResponse(
 ) : Response, Parcelable {
 
     constructor(parcel: Parcel) : this(
-        parcel.readValue(AndroidParcelableInvocationResponse::class.java.classLoader),
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            parcel.readSerializable(AndroidParcelableInvocationResponse::class.java.classLoader, Throwable::class.java)
-        } else parcel.readSerializable() as? Throwable
+        data = parcel.readValue(AndroidParcelableInvocationResponse::class.java.classLoader),
+        throwable = ParcelCompat.readSerializable(parcel, AndroidParcelableInvocationResponse::class.java.classLoader, Throwable::class.java)
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

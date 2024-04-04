@@ -1,8 +1,9 @@
 package com.dst.rpc.android.component
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
+import androidx.core.content.IntentCompat
+import androidx.core.os.BundleCompat
 import com.dst.rpc.android.AIDLContext
 
 /**
@@ -13,7 +14,7 @@ import com.dst.rpc.android.AIDLContext
 internal const val KEY_PROCESS_REQUEST_BUNDLE = "key_rpc_connection_context"
 
 internal var Intent.rpcContext: AIDLContext?
-    get() = this.extras?.rpcContext
+    get() = IntentCompat.getParcelableExtra(this, KEY_PROCESS_REQUEST_BUNDLE, AIDLContext::class.java)
     set(value) {
         this.putExtra(KEY_PROCESS_REQUEST_BUNDLE, value)
     }
@@ -23,7 +24,5 @@ internal var Bundle.rpcContext: AIDLContext?
         this.putParcelable(KEY_PROCESS_REQUEST_BUNDLE, value)
     }
     get() = kotlin.runCatching {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            this.getParcelable(KEY_PROCESS_REQUEST_BUNDLE, AIDLContext::class.java)
-        } else this.getParcelable(KEY_PROCESS_REQUEST_BUNDLE)
+        BundleCompat.getParcelable(this, KEY_PROCESS_REQUEST_BUNDLE, AIDLContext::class.java)
     }.onFailure { it.printStackTrace() }.getOrNull()

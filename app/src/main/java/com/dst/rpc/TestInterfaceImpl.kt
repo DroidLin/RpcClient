@@ -1,5 +1,6 @@
 package com.dst.rpc
 
+import android.util.Log
 import com.dst.rpc.annotations.RPCImplFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,7 +11,10 @@ import kotlinx.coroutines.withContext
  */
 //@RPCImplementation(clazz = TestInterface::class)
 class TestInterfaceImpl : TestInterface {
-    override val name: String get() = "liuzhongao"
+    override val name: String get() {
+        Log.i("LZAAAAAAA", "receive getName")
+        return "liuzhongao"
+    }
 
     override fun openUserName(number: Int) {
     }

@@ -43,6 +43,7 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.2")
+    implementation("androidx.core:core:1.10.1")
 }
 
 publishing {

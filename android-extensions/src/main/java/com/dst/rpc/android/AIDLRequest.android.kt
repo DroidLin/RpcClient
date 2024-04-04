@@ -1,7 +1,9 @@
 package com.dst.rpc.android
 
+import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.core.os.ParcelCompat
 import com.dst.rpc.safeUnbox
 
 internal data class AndroidInvocationRequest(
@@ -16,8 +18,8 @@ internal data class AndroidInvocationRequest(
         className = requireNotNull(parcel.readString()),
         functionName = requireNotNull(parcel.readString()),
         functionUniqueKey = requireNotNull(parcel.readString()),
-        classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
-        valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
+        classTypesOfFunctionParameter = requireNotNull(ParcelCompat.readArrayList(parcel, AndroidInvocationRequest::class.java.classLoader, String::class.java)),
+        valuesOfFunctionParameter = requireNotNull(ParcelCompat.readArrayList(parcel, AndroidInvocationRequest::class.java.classLoader, Any::class.java)),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -61,8 +63,8 @@ data class AndroidSuspendInvocationRequest internal constructor(
         className = requireNotNull(parcel.readString()),
         functionName = requireNotNull(parcel.readString()),
         functionUniqueKey = requireNotNull(parcel.readString()),
-        classTypesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<String>),
-        valuesOfFunctionParameter = requireNotNull(parcel.readArrayList(AndroidSuspendInvocationRequest::class.java.classLoader) as? List<Any?>),
+        classTypesOfFunctionParameter = requireNotNull(ParcelCompat.readArrayList(parcel, AndroidSuspendInvocationRequest::class.java.classLoader, String::class.java)),
+        valuesOfFunctionParameter = requireNotNull(ParcelCompat.readArrayList(parcel, AndroidSuspendInvocationRequest::class.java.classLoader, Any::class.java)),
         aidlCallback = AIDLCallback(AIDLFunction(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))),
     )
 
@@ -99,7 +101,7 @@ internal data class RPCallbackRequest(val data: Any?, val throwable: Throwable? 
 
     constructor(parcel: Parcel) : this(
         data = parcel.readValue(RPCallbackRequest::class.java.classLoader),
-        throwable = parcel.readSerializable() as? Throwable
+        throwable = ParcelCompat.readSerializable(parcel, RPCallbackRequest::class.java.classLoader, Throwable::class.java)
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -131,13 +133,7 @@ internal data class AttachAndroidCallServiceRequest(
 
     constructor(parcel: Parcel) : this(
         callService = AndroidCallService(
-            function = AIDLFunction(
-                function = Function.Stub.asInterface(
-                    requireNotNull(
-                        parcel.readStrongBinder()
-                    )
-                )
-            )
+            function = AIDLFunction(function = Function.Stub.asInterface(requireNotNull(parcel.readStrongBinder())))
         )
     )
 

@@ -1,8 +1,8 @@
 package com.dst.rpc.android
 
-import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.core.os.ParcelCompat
 
 /**
  * @author liuzhongao
@@ -10,19 +10,15 @@ import android.os.Parcelable
  */
 data class AIDLContext internal constructor(
     val remoteServiceName: String,
-    val sourceAddress: AIDLAddress,
-    val remoteAddress: AIDLAddress,
+    val sourceAddress: AndroidAddress,
+    val remoteAddress: AndroidAddress,
     internal val callService: AndroidCallService
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
         remoteServiceName = parcel.readString() ?: "",
-        sourceAddress = requireNotNull(if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            parcel.readParcelable(AIDLAddress::class.java.classLoader, AIDLAddress::class.java)
-        } else parcel.readParcelable(AIDLAddress::class.java.classLoader)),
-        remoteAddress = requireNotNull(if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            parcel.readParcelable(AIDLAddress::class.java.classLoader, AIDLAddress::class.java)
-        } else parcel.readParcelable(AIDLAddress::class.java.classLoader)),
+        sourceAddress = requireNotNull(ParcelCompat.readParcelable(parcel, AIDLContext::class.java.classLoader, AndroidAddress::class.java)),
+        remoteAddress = requireNotNull(ParcelCompat.readParcelable(parcel, AIDLContext::class.java.classLoader, AndroidAddress::class.java)),
         callService = AndroidCallService(AIDLFunction(function = Function.Stub.asInterface(parcel.readStrongBinder())))
     )
 

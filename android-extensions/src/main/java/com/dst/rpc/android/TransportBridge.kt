@@ -60,7 +60,7 @@ internal class TransportBridge : Parcelable, Serializable {
 
         @JvmStatic
         fun obtain(): TransportBridge {
-            synchronized(this) {
+            synchronized(TransportBridge::class.java) {
                 val head = this.bridgeParameterHead
                 if (head != null) {
                     this.bridgeParameterHead = head._next
